@@ -1,0 +1,31 @@
+{
+  "name": "rfid-smart-home-care",
+  "version": "1.2.2",
+  "description": "방문요양 급여제공기록지 스마트 통합 허브",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^26.15.2"
+  },
+  "build": {
+    "appId": "com.rfid.smarthomecare",
+    "productName": "방문요양 급여기록지 스마트 통합 허브",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "rfid_icon.png"
+    },
+    "files": [
+      "**/*",
+      "!dist"
+    ]
+  }
+}

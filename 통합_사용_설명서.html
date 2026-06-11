@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👥 RFID & 수기 급여제공기록지 통합 설명서</title>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+  <style>
+    :root {
+      --primary: #764ba2;
+      --primary-light: #f5f0fa;
+      --secondary: #667eea;
+      --success: #2e7d32;
+      --success-light: #edf7ed;
+      --text-dark: #1e1e2f;
+      --text-muted: #64748b;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card-shadow: 0 4px 20px rgba(118, 75, 162, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #f4f5f9;
+      color: var(--text-dark);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    .manual-container {
+      width: 100%;
+      max-width: 1250px;
+      height: auto;
+      /* 고정 높이 제거 -> 콘텐츠 크기에 딱 맞춰 밀착 */
+      max-height: 95vh;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(118, 75, 162, 0.08);
+      overflow-y: auto;
+    }
+
+    /* 슬림 상단 헤더 */
+    .manual-header {
+      background: var(--bg-gradient);
+      padding: 12px 24px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    /* 메인 래퍼 및 외부 뒤로가기 버튼 */
+    .main-wrapper {
+      width: 100%;
+      max-width: 1250px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: auto;
+    }
+
+    .back-link-wrapper {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 0 4px;
+    }
+
+    .btn-back-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-back-text:hover {
+      color: var(--primary);
+      transform: translateX(-4px);
+    }
+
+    @media print {
+      .back-link-wrapper {
+        display: none !important;
+      }
+    }
+
+    .manual-header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .manual-header p {
+      font-size: 12.5px;
+      opacity: 0.9;
+      font-weight: 500;
+      text-align: right;
+    }
+
+    /* 4단계 2x2 정밀 그리드 */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto auto;
+      /* 고정 1fr 2fr 제거 -> 행마다 실제 필요한 높이만큼만 최소 적용 */
+      gap: 10px;
+      padding: 10px 16px;
+      flex-grow: 1;
+      background: #fafafc;
+    }
+
+    .step-card {
+      background: #ffffff;
+      border: 1px solid #eef0f6;
+      border-radius: 12px;
+      padding: 14px 16px 12px 16px;
+      /* 상단 여백 확보, 하단 남는 여백 축소 */
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.01);
+      transition: all 0.2s ease;
+      min-height: 190px;
+      /* 1번,2번 카드가 너무 쪼그라들지 않도록 절반 크기만큼의 최적의 최소 높이 확보 */
+    }
+
+    .step-card:hover {
+      border-color: rgba(118, 75, 162, 0.2);
+      box-shadow: 0 4px 15px rgba(118, 75, 162, 0.06);
+    }
+
+    /* 상단 헤더 영역 */
+    .step-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    /* 단계 배지 - 미니멀하고 고급스럽게 축소 */
+    .step-card-num {
+      width: 28px;
+      height: 28px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      border: 1px solid rgba(118, 75, 162, 0.15);
+      flex-shrink: 0;
+    }
+
+    .step-card h3 {
+      font-size: 17.5px;
+      /* 시원하고 눈에 잘 들어오게 크기 확대 */
+      font-weight: 800;
+      /* 존재감 있는 두께 처리 */
+      color: #3b1b5c;
+      /* 더욱 명도가 낮고 또렷한 딥 퍼플 네이비색 전환 */
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 8px;
+      margin: 0;
+    }
+
+    .step-card h3 .file-badge {
+      font-size: 12.5px;
+      /* 한눈에 읽히도록 대폭 확대 */
+      background: rgba(118, 75, 162, 0.12);
+      /* 배경색을 살짝 더 진하게 주어 선명성 강화 */
+      color: #764ba2;
+      padding: 2px 8px;
+      /* 숨통이 트이는 편안한 여백 */
+      border-radius: 6px;
+      border: 1.2px solid rgba(118, 75, 162, 0.25);
+      /* 보더 선 두께 및 대비 강화 */
+      font-weight: 800;
+      /* 확실한 볼드 적용 */
+      letter-spacing: -0.3px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    a.file-badge:hover {
+      background: var(--primary);
+      color: #ffffff !important;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(118, 75, 162, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .step-instructions li a.inline-link {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1.5px dashed rgba(118, 75, 162, 0.4);
+      transition: all 0.2s ease;
+      padding: 0 2px;
+    }
+
+    .step-instructions li a.inline-link:hover {
+      color: #3b1b5c;
+      border-bottom-color: #3b1b5c;
+      background-color: var(--primary-light);
+      border-radius: 4px;
+    }
+
+    .step-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.4;
+      word-break: keep-all;
+      /* 단어 단위 줄바꿈 적용 */
+    }
+
+    /* 가로 간결 목록 - 왼쪽 마진 제거하여 치우침 방지 */
+    .step-instructions {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      /* 항목 간의 여백을 적절히 추가 */
+      margin: 0;
+      margin-top: 12px;
+      /* 상위 항목(설명)과 하위 항목(목록) 사이의 여백 추가 */
+      padding: 0;
+      flex-grow: 1;
+      /* 카드의 빈 세로 공간을 채우도록 세로 크기 확장 */
+    }
+
+    .step-instructions li {
+      position: relative;
+      font-size: 13.5px;
+      color: #1e293b;
+      padding-left: 24px;
+      /* 번호가 차지할 최소한의 패딩만 설정 */
+      font-weight: 600;
+      line-height: 1.4;
+      word-break: keep-all;
+      /* 단어 단위 줄바꿈 적용 */
+    }
+
+    /* 동그란 녹색 숫자 액션 배지 */
+    .step-instructions li .action-num {
+      position: absolute;
+      left: 0;
+      top: 1px;
+      width: 17px;
+      height: 17px;
+      background: var(--success);
+      color: #ffffff;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+    }
+
+    .step-instructions li strong {
+      color: #0f172a;
+      /* 강조 텍스트 검정색 처리 */
+    }
+
+    /* 하단 가로 3열 꿀팁 바 */
+    .tips-section {
+      background: #ffffff;
+      border-top: 1px solid #f0f0f5;
+      padding: 10px 20px;
+      flex-shrink: 0;
+    }
+
+    .tips-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      border-left: 3px solid var(--primary);
+      padding-left: 6px;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .tip-callout {
+      background: #fafafc;
+      border: 1px solid #eef0f6;
+      border-radius: 8px;
+      padding: 6px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .tip-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .tip-body h4 {
+      font-size: 12.5px;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+
+    .tip-body p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      word-break: keep-all;
+      /* 단어 단위 줄바꿈 적용 */
+    }
+
+    /* 모바일 미세 대응 */
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+        height: auto;
+        padding: 10px;
+      }
+
+      .manual-container {
+        height: auto;
+        max-height: none;
+      }
+
+      .manual-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .manual-header p {
+        text-align: left;
+      }
+
+      .steps-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+      }
+
+      .tips-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="back-link-wrapper">
+      <a href="./index.html" class="btn-back-text" title="메인 화면으로 돌아가기">
+        ← 메인 화면으로 돌아가기
+      </a>
+    </div>
+
+    <div class="manual-container">
+
+      <!-- 1. 초슬림 상단 헤더 -->
+      <div class="manual-header">
+        <h1>👥 RFID & 수기 급여제공기록지 통합 설명서</h1>
+        <p>수급자 등록부터 기록지 자동 기입 및 최종 출력까지 10초 만에 끝내는 전체 업무 흐름</p>
+      </div>
+
+    <!-- 2. 2x2 정교한 스크롤 방지 4단계 그리드 -->
+    <div class="steps-grid">
+
+      <!-- STEP 1 -->
+      <div class="step-card">
+        <div class="step-card-header">
+          <div class="step-card-num">1</div>
+          <h3>수급자 등록 및 변경하기 <a href="수기 급여제공기록지/[관리자] 수급자 등록 및 변경하기.html" target="_blank" class="file-badge">수급자
+              등록 및 변경하기.html ↗</a></h3>
+        </div>
+        <p class="step-desc">수급자의 기본 정보와 표준 일정을 새롭게 등록하거나 바꿀 때 사용합니다.</p>
+        <ul class="step-instructions">
+          <li><span class="action-num">1</span> 내가 현재 실행하고 있는 폴더 내의 <a href="수기 급여제공기록지/[관리자] 수급자 등록 및 변경하기.html"
+              target="_blank" class="inline-link"><strong>수급자 등록 및 변경하기.html</strong></a> 파일을 클릭하여 켭니다.</li>
+          <li><span class="action-num">2</span> 왼쪽 양식에서 정보를 입력하고 제공 시간과 제공 일정을 <strong>[저장하기]</strong>로 저장합니다.</li>
+        </ul>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card">
+        <div class="step-card-header">
+          <div class="step-card-num">2</div>
+          <h3>등록된 수급자 목록 다운로드 <span class="file-badge">recipients.js</span></h3>
+        </div>
+        <p class="step-desc">대시보드에서 등록한 수급자 명단을 컴퓨터에 확실하게 보관·저장합니다.</p>
+        <ul class="step-instructions">
+          <li><span class="action-num">1</span> 화면 맨 아래 <strong>[⚙️ 등록된 수급자 목록 다운로드 (recipients.js)]</strong> 단추를 클릭합니다.
+          </li>
+          <li><span class="action-num">2</span> 윈도우의 <strong>'다운로드(Downloads)'</strong> 폴더에 파일이 잘 생성되었는지 다운로드 완료를 확인합니다.
+          </li>
+        </ul>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card">
+        <div class="step-card-header">
+          <div class="step-card-num">3</div>
+          <h3>기록지 프로그램에 자동 업로드하기 <span class="file-badge">수급자 목록 업로드.bat</span></h3>
+        </div>
+        <p class="step-desc">다운로드받은 최신 수급자 파일을 기록지 안으로 자동 동기화·업로드시킵니다.</p>
+        <ul class="step-instructions">
+          <li><span class="action-num">1</span> 내가 현재 실행하고 있는 폴더 내의 <strong>수급자 목록 업로드.bat</strong>를 마우스로
+            <strong>더블클릭</strong>합니다.
+          </li>
+          <li><span class="action-num">2</span> 검은 창이 뜨며 <span style="color: var(--success); font-weight: bold;">"업로드
+              완료!"</span> 알림이 나오면 키보드의 아무 키나 눌러 창을 닫아줍니다.</li>
+          <li
+            style="font-size: 12.5px; color: #c62828; font-weight: 500; margin-top: auto !important; padding: 10px 14px; background-color: #ffebee; border: 1.2px dashed #e57373; border-radius: 6px; padding-left: 14px !important; line-height: 1.5; list-style: none; word-break: keep-all;">
+            ⚠️ <strong>중요 주의사항:</strong> <strong>'수급자 목록 업로드.bat'</strong> 파일은 절대 폴더 밖으로 직접 이동시키면 안 됩니다! 바탕화면에 꺼내두고
+            사용하시려면 파일 마우스 우클릭 ➔ 보내기 ➔ <strong>바탕화면에 바로가기 만들기</strong>로 바로가기 아이콘을 생성해 주세요.
+          </li>
+        </ul>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-card">
+        <div class="step-card-header">
+          <div class="step-card-num">4</div>
+          <h3>기록지 기입 및 최종 출력 마감
+            <a href="./RFID_APP/[RFID APP형].html" target="_blank" class="file-badge">[RFID APP형] ↗</a>
+            <a href="./수기 급여제공기록지/[수기급여제공기록지].html" target="_blank" class="file-badge">[수기급여제공기록지] ↗</a>
+          </h3>
+        </div>
+        <p class="step-desc">일정을 자동 완성(더블클릭)하고 출력하여 하루 마무리를 짓습니다.</p>
+        <ul class="step-instructions">
+          <li><span class="action-num">1</span> 해당 폴더의 <a href="./RFID_APP/[RFID APP형].html" target="_blank"
+              class="inline-link"><strong>[RFID APP형].html</strong></a> 또는
+            <a href="./수기 급여제공기록지/[수기급여제공기록지].html" target="_blank"
+              class="inline-link"><strong>[수기급여제공기록지].html</strong></a>(기록 창)을 켭니다. <strong>[수기기록지/APP형 공통]</strong>
+            목록에서 수급자 이름을 <strong>[더블클릭]</strong>하여 하루 일정을 1초 만에 자동 채웁니다.
+          </li>
+          <li><span class="action-num">2</span> <strong>[APP형]</strong> 입력값 정밀 검토 후 하단의 <strong>[전송하기]</strong> 버튼을 클릭하면
+            화면 출력 인쇄 창이 자동으로 열리며 최종 마감됩니다.</li>
+          <li><span class="action-num">3</span> <strong>[수기기록지]</strong> 입력값 정밀 검토 후 우측 상단의
+            <strong>[기록지인쇄/PDF저장]</strong> 버튼을 클릭하여 인쇄 및 PDF로 저장해 마감합니다.
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- 3. 하단 슬림 3열 가로 팁 바 -->
+    <div class="tips-section">
+      <div class="tips-title">💡 알아두면 매우 편리한 3대 꿀팁</div>
+      <div class="tips-grid">
+
+        <!-- 꿀팁 1 -->
+        <div class="tip-callout">
+          <span class="tip-icon">🎛️</span>
+          <div class="tip-body">
+            <h4>자유로운 화면 이동</h4>
+            <p>수급자 목록 상자는 글자가 없는 빈 배경 부분을 꾹 누르고 끌면 지연 없이 부드럽게 어디로든 이동합니다.</p>
+          </div>
+        </div>
+
+        <!-- 꿀팁 2 -->
+        <div class="tip-callout">
+          <span class="tip-icon">⏰</span>
+          <div class="tip-body">
+            <h4>경고 팝업 가림막 차단</h4>
+            <p>수급자를 연속 더블클릭할 때 기존 수치가 자동 청소(cancelForm)된 후 입력되어 시간 초과 경고 팝업이 뜨지 않습니다.</p>
+          </div>
+        </div>
+
+        <!-- 꿀팁 3 -->
+        <div class="tip-callout">
+          <span class="tip-icon">✍️</span>
+          <div class="tip-body">
+            <h4>직접 메모장 수동 입력</h4>
+            <p><code>recipients.js</code>를 열고 직접 쓸 땐 <code>"id"</code>를 과감히 지워도 이름_생년월일로 고유 ID가 자동 생성(대안 B)됩니다.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div> <!-- manual-container 닫기 -->
+</div> <!-- main-wrapper 닫기 -->
+
+</body>
+
+</html>

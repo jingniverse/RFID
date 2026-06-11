@@ -1,0 +1,15 @@
+# 🛡️ RFID 개인정보보호 자동 업로드 차단 설정 파일 (Git Ignore)
+# 이 파일은 GitHub Desktop이 실제 수급자 정보(recipients.js)를 감지하고 
+# 깃허브 인터넷 서버로 업로드하는 것을 자동으로 완벽하게 무시하도록 제어합니다.
+
+# 1. 모든 하위 폴더의 recipients.js 개인정보 파일 업로드 영구 차단
+**/recipients.js
+
+# 2. 시스템 임시 파일 및 캐시 파일 차단
+Thumbs.db
+.DS_Store
+*.log
+
+# 3. 무거운 종속성 및 빌드 결과물 업로드 차단
+node_modules/
+dist/

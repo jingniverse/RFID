@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>장기요양급여 제공기록지(방문요양)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .version-switch-floating {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 999;
+    }
+    .btn-switch-ver {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      color: white !important;
+      padding: 12px 20px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(118, 75, 162, 0.25);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+    }
+    .btn-switch-ver:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(118, 75, 162, 0.35);
+      filter: brightness(1.1);
+    }
+    .btn-switch-ver:active {
+      transform: translateY(-1px);
+    }
+    @media print {
+      .version-switch-floating {
+        display: none !important;
+      }
+    }
+    @media (max-width: 1200px) {
+      .version-switch-floating {
+        position: static;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+      .btn-switch-ver {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 10px 16px;
+        font-size: 12.5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 🔄 RFID APP형 전환용 플로팅 버튼 (인쇄 시 자동 숨김) -->
+  <div class="version-switch-floating">
+    <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver">
+      📱 RFID APP형 화면으로 전환
+    </a>
+  </div>
+
+  <!-- 제어 패널 (화면 입력 시에만 나타나고, 인쇄 시 자동 숨김 처리됨) -->
+  <div class="control-panel" id="controlPanel">
+    <!-- 토글 핸들 버튼 -->
+    <button class="control-panel-toggle" id="controlPanelToggle" title="수급자 관리 패널 열기/닫기">
+      <span class="toggle-arrow">◀</span>
+    </button>
+    <div class="control-panel-header">
+      <h3>👥 수급자 & 요양보호사 관리</h3>
+    </div>
+
+    <div class="control-buttons" style="display: flex; flex-direction: column; gap: 8px;">
+      <button id="btn-reset" class="btn btn-reset btn-print-full" title="기록지 입력 내용을 초기화합니다.">
+        <span class="icon">🔄</span> 기록 초기화
+      </button>
+      <button id="btn-print" class="btn btn-print btn-print-full" title="기록지를 PDF로 저장하거나 인쇄합니다.">
+        <span class="icon">🖨️</span> 기록지 인쇄 / PDF 저장
+      </button>
+    </div>
+
+    <!-- 수급자 & 요양보호사 관리 위젯 (창 띄우지 않고 화면에 바로 배치) -->
+    <div class="recipient-widget">
+
+      <!-- [신규 안내] 더블클릭 기입 기능 명시적 가이드 탑재 -->
+      <div
+        style="background: rgba(118, 75, 162, 0.06); padding: 12px; border-radius: 12px; border: 1px solid rgba(118, 75, 162, 0.15); margin-bottom: 10px;">
+        <span
+          style="font-size: 12px; color: #764ba2; line-height: 1.5; display: block; font-weight: bold; letter-spacing: -0.3px;">
+          💡 <strong>더블클릭 꿀팁:</strong> 성명을 더블클릭하면 어제 날짜와 저장된 하루 일정이 즉시 자동 채워집니다!
+        </span>
+      </div>
+
+      <!-- 등록된 리스트 -->
+      <div class="recipient-list-section">
+        <h4>등록된 수급자 목록</h4>
+        <!-- 수급자 성명 실시간 검색바 (요양보호사 검색 제외) -->
+        <div class="search-box-wrap">
+          <input type="text" id="recipient-search" class="search-input" placeholder="🔍 수급자 성명 검색...">
+          <button id="btn-search-clear" class="btn-search-clear" style="display: none;">×</button>
+        </div>
+        <div id="recipient-list-container" class="recipient-list">
+          <!-- JS에서 동적 생성 예정 -->
+        </div>
+        <button id="btn-open-manage" class="btn btn-print btn-print-full"
+          style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); margin-top: 10px; padding: 12px 8px !important; font-size: 12.5px !important;"
+          title="독립된 대시보드 창을 열어 수급자 일괄 등록, 정보 수정, 수급자 삭제 및 데이터 백업 작업을 편리하게 수행합니다.">
+          👥 수급자 정보 관리 / 신규 등록
+        </button>
+      </div>
+
+      <!-- ⚠️ 실시간 오류 알림 대시보드 신설 -->
+      <div class="validation-dashboard-section">
+        <h4>⚠️ 실시간 오류 알림 대시보드</h4>
+        <div id="validation-dashboard-list" class="validation-dashboard-list">
+          <div class="val-dashboard-item success">
+            <span>✅ 모든 일정의 합산 시간이 완벽히 일치합니다.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="header-law">
+      ■ 노인장기요양보험법 시행규칙 [별지 제12호서식] <span style="color: blue;">&lt;개정 2025. 12. 12.&gt;</span>
+    </div>
+    <div class="title">장기요양급여 제공기록지(방문요양)</div>
+    <div class="daily-label">(앞쪽)</div>
+    <table class="record-table">
+      <colgroup>
+        <col style="width: 7.2%;">
+        <col style="width: 9.8%;">
+        <col style="width: 27.0%;">
+        <col span="7" style="width: 8%;">
+      </colgroup>
+      <tbody>
+        <!-- 상단 정보 영역 -->
+        <tr>
+          <td colspan="3" class="info-cell text-left pad-left">
+            <div class="info-label">수급자 성명</div>
+            <div class="info-value"><input type="text" class="static-input name-input" maxlength="4" value=""></div>
+          </td>
+          <td colspan="2" class="info-cell text-left pad-left">
+            <div class="info-label">생년월일</div>
+            <div class="info-value"><input type="text" class="static-input birth-input" maxlength="6" value=""></div>
+          </td>
+          <td colspan="2" class="info-cell text-left pad-left">
+            <div class="info-label">장기요양등급</div>
+            <div class="info-value">
+              <select class="static-select grade-select">
+                <option value="">선택</option>
+                <option value="1">1등급</option>
+                <option value="2">2등급</option>
+                <option value="3" selected>3등급</option>
+                <option value="4">4등급</option>
+                <option value="5">5등급</option>
+              </select>
+              <span class="grade-print print-only"></span>
+            </div>
+          </td>
+          <td colspan="3" class="info-cell text-left pad-left">
+            <div class="info-label">장기요양인정번호</div>
+            <div class="info-value"><input type="text" class="static-input cert-input" maxlength="11" value="L"></div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="5" class="info-cell text-left pad-left">
+            <div class="info-label">장기요양기관명</div>
+            <div class="info-value">순시미재가복지센터 은평1호점</div>
+          </td>
+          <td colspan="5" class="info-cell text-left pad-left">
+            <div class="info-label">장기요양기관기호</div>
+            <div class="info-value">2-11380-00518</div>
+          </td>
+        </tr>
+
+        <!-- 일정관리 -->
+        <tr class="section-divider">
+          <th rowspan="4" class="main-category">일정<br>관리</th>
+          <th colspan="2">( <input type="text" class="data-input text-center num-only year-input"
+              style="width:52px; display:inline-block;" value="" maxlength="4"> )년 &nbsp;&nbsp;&nbsp; 월/일</th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+          <th><input type="text" class="data-input text-center date-mask" maxlength="5" placeholder="" value=""></th>
+        </tr>
+        <tr>
+          <th rowspan="3">제공시간</th>
+          <th>총시간</th>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input total-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+        <tr>
+          <th>시작시간</th>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask start-time-input" maxlength="5" placeholder=""
+              value=""></td>
+        </tr>
+        <tr>
+          <th>종료시간</th>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+          <td><input type="text" class="data-input text-center time-mask end-time-input" maxlength="5" placeholder=""
+              value=""></td>
+        </tr>
+
+        <!-- 서비스 제공 -->
+        <tr>
+          <th rowspan="14" class="main-category">서비스<br>제공</th>
+          <th rowspan="7">신체&nbsp;활동<br>지원</th>
+          <td>개인위생(옷갈아입기,&nbsp;세면,<br>구강청결,&nbsp;몸단장&nbsp;도움&nbsp;등)</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr>
+          <td>몸&nbsp;씻기&nbsp;도움</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr>
+          <td>식사&nbsp;도움<br>(영양관리&nbsp;등)</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr>
+          <td>체위변경</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr>
+          <td>이동&nbsp;도움(보행,<br>보장구사용&nbsp;등&nbsp;도움)</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr>
+          <td>화장실 이용하기</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr class="time-row">
+          <td class="text-center">제공시간</td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+        <tr class="time-row">
+          <th rowspan="2">인지&nbsp;활동<br>지원</th>
+          <td>인지자극활동</td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+        <tr class="time-row">
+          <td>일상생활&nbsp;함께하기</td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+        <tr class="time-row">
+          <th>인지&nbsp;관리<br>지원</th>
+          <td>인지행동변화&nbsp;관리&nbsp;등</td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+        <tr class="time-row">
+          <th>정서지원</th>
+          <td>의사소통&nbsp;도움&nbsp;등<br>말벗,&nbsp;격려</td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text" class="data-input text-right num-only val-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+        <tr>
+          <th rowspan="3">가사&nbsp;및<br>일상생활<br>지원</th>
+          <td>식사준비,&nbsp;청소&nbsp;및<br>주변정리&nbsp;정돈,&nbsp;세탁&nbsp;등</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr>
+          <td>개인활동지원<br>(외출시&nbsp;동행&nbsp;등)</td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+          <td><span class="chk-box">□</span></td>
+        </tr>
+        <tr class="time-row">
+          <td class="text-center">제공시간</td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input housework-time-input" value="">
+            <span class="unit">분</span>
+          </td>
+        </tr>
+
+        <!-- 변화상태 -->
+        <tr>
+          <th rowspan="5" class="main-category">변화<br>상태</th>
+          <th>신체기능</th>
+          <th><span class="num-item"><span class="num-box isolated">1</span>호전</span>&nbsp;&nbsp;<span
+              class="num-item"><span class="num-box isolated">2</span>유지</span>&nbsp;&nbsp;<span class="num-item"><span
+                class="num-box isolated">3</span>악화</span></th>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+        </tr>
+        <tr>
+          <th>식사기능</th>
+          <th><span class="num-item"><span class="num-box isolated">1</span>호전</span>&nbsp;&nbsp;<span
+              class="num-item"><span class="num-box isolated">2</span>유지</span>&nbsp;&nbsp;<span class="num-item"><span
+                class="num-box isolated">3</span>악화</span></th>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+        </tr>
+        <tr>
+          <th>인지기능</th>
+          <th><span class="num-item"><span class="num-box isolated">1</span>호전</span>&nbsp;&nbsp;<span
+              class="num-item"><span class="num-box isolated">2</span>유지</span>&nbsp;&nbsp;<span class="num-item"><span
+                class="num-box isolated">3</span>악화</span></th>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group">
+            <span class="num-box" data-val="1">1</span><span class="num-box" data-val="2">2</span><span class="num-box"
+              data-val="3">3</span>
+          </td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+          <td class="num-group"><span class="num-box" data-val="1">1</span><span class="num-box"
+              data-val="2">2</span><span class="num-box" data-val="3">3</span></td>
+        </tr>
+        <tr>
+          <th rowspan="2">배변변화</th>
+          <th>대변&nbsp;실수&nbsp;횟수</th>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input feces-input" value="">
+            <span class="unit">회</span>
+          </td>
+        </tr>
+        <tr>
+          <th>소변&nbsp;실수&nbsp;횟수</th>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+          <td class="text-right pad-right"><input type="text"
+              class="data-input text-right num-only val-input urine-input" value="">
+            <span class="unit">회</span>
+          </td>
+        </tr>
+
+        <!-- 특이사항 -->
+        <tr class="note-row">
+          <th rowspan="7" class="main-category">특이<br>사항</th>
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+        <tr class="note-row">
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+        <tr class="note-row">
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+        <tr class="note-row">
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+        <tr class="note-row">
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+        <tr class="note-row">
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+        <tr class="note-row">
+          <td><input type="text" class="data-input text-center date-mask" maxlength="5" value=""></td>
+          <td colspan="8" class="text-center"><input type="text" class="data-input text-center" value=""></td>
+        </tr>
+
+        <!-- 서명 -->
+        <tr class="sign-row">
+          <th rowspan="2" colspan="2" class="main-category">서명</th>
+          <th>장기요양요원&nbsp;성명<br>(서명)</th>
+          <td><input type="text" class="data-input text-center" maxlength="4" value=""></td>
+          <td><input type="text" class="data-input text-center" maxlength="4" value=""></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+        </tr>
+        <tr class="sign-row">
+          <th>수급자&nbsp;또는&nbsp;보호자&nbsp;성명<br>(서명)</th>
+          <td><input type="text" class="data-input text-center" maxlength="4" value=""></td>
+          <td><input type="text" class="data-input text-center" maxlength="4" value=""></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+          <td><input type="text" class="data-input text-center" maxlength="4"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-size">210㎜×297㎜[백상지 80g/㎡(재활용품)]</div>
+  </div>
+
+  <!-- ⚠️ 실시간 상단 플로팅 토스트 경고 알림 컨테이너 -->
+  <div id="validation-toast-container" class="validation-toast-container"></div>
+
+  <script src="js/recipients.js"></script>
+  <script src="js/script.js"></script>
+</body>
+
+</html>

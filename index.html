@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👥 방문요양 급여제공기록지 스마트 통합 허브</title>
+  <!-- 프리미엄 폰트 Outfit & Noto Sans KR 로드 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #121216;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f1f5f9;
+      --text-sub: #94a3b8;
+
+      --purple-glow: rgba(118, 75, 162, 0.4);
+      --blue-glow: rgba(59, 130, 246, 0.3);
+
+      --badge-bg: rgba(255, 255, 255, 0.05);
+      --badge-border: rgba(255, 255, 255, 0.1);
+      --card-title: #ffffff;
+      --hub-title-gradient: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+    }
+
+    body.light-theme {
+      --bg-dark: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text-main: #1e293b;
+      --text-sub: #475569;
+
+      --purple-glow: rgba(118, 75, 162, 0.15);
+      --blue-glow: rgba(59, 130, 246, 0.12);
+
+      --badge-bg: rgba(118, 75, 162, 0.05);
+      --badge-border: rgba(118, 75, 162, 0.1);
+      --card-title: #0f172a;
+      --hub-title-gradient: linear-gradient(135deg, #0f172a 0%, #334155 50%, #475569 100%);
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-dark);
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      color: var(--text-main);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    /* 프리미엄 동적 배경 그라데이션 빛 효과 */
+    .bg-aurora {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+      background: radial-gradient(circle at 10% 20%, rgba(26, 21, 44, 1) 0%, rgba(12, 12, 16, 1) 90%);
+      transition: background 0.4s ease;
+    }
+
+    body.light-theme .bg-aurora {
+      background: radial-gradient(circle at 10% 20%, rgba(241, 245, 249, 1) 0%, rgba(226, 232, 240, 1) 90%);
+    }
+
+    .aurora-light-1 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--purple-glow) 0%, rgba(0, 0, 0, 0) 70%);
+      top: -200px;
+      right: -100px;
+      animation: floatAurora1 20s infinite alternate ease-in-out;
+      opacity: 0.8;
+      filter: blur(40px);
+    }
+
+    .aurora-light-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--blue-glow) 0%, rgba(0, 0, 0, 0) 70%);
+      bottom: -150px;
+      left: -100px;
+      animation: floatAurora2 18s infinite alternate ease-in-out;
+      opacity: 0.6;
+      filter: blur(40px);
+    }
+
+    @keyframes floatAurora1 {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(-100px, 100px) scale(1.1);
+      }
+    }
+
+    @keyframes floatAurora2 {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(80px, -80px) scale(1.15);
+      }
+    }
+
+    /* 메인 콘텐츠 허브 컨테이너 */
+    .hub-container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px;
+      box-sizing: border-box;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+    }
+
+    /* 헤더 영역 */
+    .hub-header {
+      text-align: center;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #a855f7;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .hub-header h1 {
+      margin: 0 0 16px 0;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      background: var(--hub-title-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .hub-header p {
+      margin: 0 auto;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-sub);
+      max-width: 600px;
+      font-weight: 300;
+    }
+
+    /* 카드 그리드 배치 */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      width: 100%;
+      box-sizing: border-box;
+      animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+      opacity: 0;
+    }
+
+    /* 개별 프리미엄 카드 디자인 (글래스모피즘 + 3D 마이크로서프 호버) */
+    .platform-card {
+      position: relative;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 38px;
+      box-sizing: border-box;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 350px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 카드 내 조명 효과 백그라운드 */
+    .card-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 100% 0%, var(--glow-color, rgba(255, 255, 255, 0.05)) 0%, rgba(0, 0, 0, 0) 60%);
+      opacity: 0.15;
+      z-index: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    .platform-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--hover-border-color);
+      box-shadow: 0 20px 40px var(--hover-shadow-color);
+    }
+
+    .platform-card:hover .card-glow {
+      opacity: 0.3;
+    }
+
+    /* 카드 헤더 */
+    .card-top {
+      position: relative;
+      z-index: 2;
+    }
+
+    .platform-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: var(--icon-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+      box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.2);
+    }
+
+    .platform-card h2 {
+      margin: 0 0 12px 0;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--card-title);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .platform-card p {
+      margin: 0;
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--text-sub);
+      font-weight: 400;
+    }
+
+    /* 기능 요약 리스트 */
+    .feature-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .feature-tag {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #cbd5e1;
+    }
+
+    /* 카드 하단 액션 버튼 */
+    .card-footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+    }
+
+    .launch-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--action-color);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap 0.2s ease;
+    }
+
+    .platform-card:hover .launch-label {
+      gap: 8px;
+    }
+
+    .badge-status {
+      font-size: 10.5px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* 풋터 영역 */
+    .hub-footer {
+      text-align: center;
+      padding: 30px 24px;
+      font-size: 12.5px;
+      color: #475569;
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+      animation: fadeIn 1s ease 0.4s forwards;
+      opacity: 0;
+    }
+
+    .hub-footer a {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .hub-footer a:hover {
+      color: #94a3b8;
+    }
+
+    /* 애니메이션 유틸리티 */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* 테마 토글 버튼 스타일 */
+    .theme-toggle-wrap {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 1000;
+    }
+
+    .btn-theme-toggle {
+      background: var(--badge-bg);
+      border: 1px solid var(--badge-border);
+      color: var(--text-main);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      outline: none;
+    }
+
+    .btn-theme-toggle:hover {
+      transform: scale(1.1) rotate(15deg);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    body.light-theme .btn-theme-toggle:hover {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 768px) {
+      .theme-toggle-wrap {
+        top: 16px;
+        right: 16px;
+      }
+
+      .btn-theme-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+    }
+
+    /* 모바일 반응형 지원 */
+    @media (max-width: 768px) {
+      .hub-container {
+        padding: 30px 20px;
+        gap: 30px;
+      }
+
+      .hub-header h1 {
+        font-size: 28px;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .platform-card {
+        min-height: auto;
+        padding: 28px;
+      }
+    }
+
+    /* 통합 사용설명서 서브 버튼 스타일 */
+    .btn-manual {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-sub);
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .btn-manual:hover {
+      color: var(--text-main);
+      border-color: #a855f7;
+      background: rgba(168, 85, 247, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+    }
+
+    /* 업데이트 알림 슬라이딩 배너 */
+    .update-banner {
+      width: 100%;
+      background: linear-gradient(90deg, #764ba2 0%, #667eea 100%);
+      color: #ffffff;
+      padding: 12px 24px;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 15px rgba(118, 75, 162, 0.15);
+      animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      z-index: 9999;
+      box-sizing: border-box;
+    }
+
+    .update-banner a {
+      color: #764ba2 !important;
+      background: #ffffff;
+      text-decoration: none;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      display: inline-block;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .update-banner a:hover {
+      background: #f3e8ff;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .update-banner .close-btn {
+      position: absolute;
+      right: 20px;
+      cursor: pointer;
+      opacity: 0.8;
+      font-weight: bold;
+      font-size: 16px;
+      transition: opacity 0.2s;
+      user-select: none;
+    }
+
+    .update-banner .close-btn:hover {
+      opacity: 1;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="light-theme">
+
+  <!-- 테마 토글 버튼 (인쇄 시 자동 숨김) -->
+  <div class="theme-toggle-wrap">
+    <button id="themeToggleBtn" class="btn-theme-toggle" title="테마 변경 (다크/라이트)">
+      <span class="theme-icon">☀️</span>
+    </button>
+  </div>
+
+  <!-- 동적 아우라 배경 이펙트 -->
+  <div class="bg-aurora">
+    <div class="aurora-light-1"></div>
+    <div class="aurora-light-2"></div>
+  </div>
+
+  <!-- 메인 허브 콘텐츠 -->
+  <div class="hub-container">
+
+    <!-- 1. 헤더 영역 -->
+    <header class="hub-header">
+      <div class="brand-badge">
+        <span>✨ SMART HOME CARE SYSTEM</span>
+      </div>
+      <h1>방문요양 급여제공기록지 작성 시스템</h1>
+      <div style="margin-top: 15px;">
+        <a href="./통합_사용_설명서.html" class="btn-manual">
+          📖 통합 사용설명서 바로가기
+        </a>
+      </div>
+    </header>
+
+    <!-- 2. 플랫폼 카드 그리드 -->
+    <main class="card-grid">
+
+      <!-- 📱 RFID APP형 플랫폼 카드 -->
+      <a href="./RFID_APP/[RFID APP형].html" class="platform-card"
+        style="--glow-color: rgba(139, 92, 246, 0.15); --hover-border-color: rgba(139, 92, 246, 0.4); --hover-shadow-color: rgba(139, 92, 246, 0.12); --icon-bg: linear-gradient(135deg, #764ba2 0%, #667eea 100%); --action-color: #a78bfa;">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <div class="platform-icon-wrap">📱</div>
+          <h2>RFID APP형</h2>
+        </div>
+        <div class="card-footer">
+          <span class="launch-label">작성 화면 열기 ➔</span>
+        </div>
+      </a>
+
+      <!-- 📝 공공서식 수기 급여기록지 카드 -->
+      <a href="./수기 급여제공기록지/[수기급여제공기록지].html" class="platform-card"
+        style="--glow-color: rgba(59, 130, 246, 0.15); --hover-border-color: rgba(59, 130, 246, 0.4); --hover-shadow-color: rgba(59, 130, 246, 0.12); --icon-bg: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%); --action-color: #60a5fa;">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <div class="platform-icon-wrap">📝</div>
+          <h2>공공서식 수기 급여기록지</h2>
+        </div>
+        <div class="card-footer">
+          <span class="launch-label">작성 화면 열기 ➔</span>
+        </div>
+      </a>
+
+    </main>
+
+  </div>
+
+  <!-- 3. 풋터 영역 -->
+  <footer class="hub-footer">
+    <p>
+      © 2026 방문요양 급여제공기록지 스마트 통합 관리 대시보드. All Rights Reserved. &nbsp;|&nbsp;
+      <span style="font-weight: 700; color: var(--text-sub);">v1.2.2</span> &nbsp;|&nbsp;
+      <a href="https://github.com/jingniverse/RFID" id="githubLink" target="_blank">GitHub Repository</a>
+    </p>
+  </footer>
+
+  <script>
+    // [공식 배포] 성별 필드 추가, 테마 토글, 뒤로가기 개선 등이 모두 완료된 v1.2.0 공식 릴리즈 빌드입니다.
+    const CURRENT_VERSION = '1.2.2';
+
+    // 기본 설정값 (로컬 실행 시 fallback용)
+    let GITHUB_USER = 'jingniverse';
+    let GITHUB_REPO = 'RFID';
+
+    // 💡 GitHub Pages 웹 접속 시, 브라우저가 자동으로 실시간 도메인 주소를 파싱하여
+    // 사용자의 진짜 깃허브 ID와 저장소명을 100% 동적으로 자동 매칭합니다.
+    if (window.location.hostname.endsWith('github.io')) {
+      const parts = window.location.hostname.split('.');
+      GITHUB_USER = parts[0];
+      const pathParts = window.location.pathname.split('/');
+      if (pathParts.length > 1 && pathParts[1]) {
+        GITHUB_REPO = pathParts[1];
+      }
+      // 푸터의 깃허브 링크 주소도 동적으로 최신 매칭
+      const githubLink = document.getElementById('githubLink');
+      if (githubLink) {
+        githubLink.href = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}`;
+      }
+    }
+
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    const icon = toggleBtn.querySelector('.theme-icon');
+
+    // 테마 Preference 복원
+    const savedTheme = localStorage.getItem('hub-theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.body.classList.remove('light-theme');
+      icon.textContent = '🌙';
+    } else {
+      document.body.classList.add('light-theme');
+      icon.textContent = '☀️';
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle('light-theme');
+      if (isLight) {
+        icon.textContent = '☀️';
+        localStorage.setItem('hub-theme', 'light');
+      } else {
+        icon.textContent = '🌙';
+        localStorage.setItem('hub-theme', 'dark');
+      }
+    });
+
+    // ─── 실시간 자동 버전 검사 및 패치 알림 기능 ───
+
+    // 정밀 세자리 버전 비교 함수 (예: 1.10.2 > 1.2.0 대응)
+    function isNewerVersion(current, latest) {
+      const cParts = current.split('.').map(Number);
+      const lParts = latest.split('.').map(Number);
+      for (let i = 0; i < 3; i++) {
+        const c = cParts[i] || 0;
+        const l = lParts[i] || 0;
+        if (l > c) return true;
+        if (l < c) return false;
+      }
+      return false;
+    }
+
+    async function checkUpdate() {
+      try {
+        // 💡 캐시 버스터(?t=시간값)를 붙여 브라우저의 끈질긴 캐시 메모리를 강제 강탈하고 실시간 버전 정보를 0.01초 만에 즉시 긁어옵니다.
+        const url = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/version.txt?t=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) return;
+
+        const latestVersion = (await response.text()).trim();
+
+        // 깃허브 전광판 버전이 내 컴퓨터의 현재 버전(1.1.0)보다 높을 때만 배너 표시
+        if (latestVersion && isNewerVersion(CURRENT_VERSION, latestVersion)) {
+          const banner = document.createElement('div');
+          banner.className = 'update-banner';
+          banner.innerHTML = `
+            <span>✨ 새로운 기능이 추가된 업데이트 버전(v${latestVersion})이 출시되었습니다!</span>
+            <a href="https://github.com/${GITHUB_USER}/${GITHUB_REPO}/archive/refs/heads/main.zip" target="_blank">
+              최신 버전 다운로드 받기 ➔
+            </a>
+            <span class="close-btn" onclick="this.parentElement.style.display='none'">✕</span>
+          `;
+          document.body.insertBefore(banner, document.body.firstChild);
+        }
+      } catch (error) {
+        console.error('버전 확인 실패:', error);
+      }
+    }
+
+    // 화면 로딩 1초 뒤에 백그라운드에서 조용히 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(checkUpdate, 1000);
+    });
+  </script>
+
+</body>
+
+</html>

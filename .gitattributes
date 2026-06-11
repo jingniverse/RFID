@@ -1,0 +1,6 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# 🚫 ZIP 다운로드 시 수급자 파일(recipients.js) 제외 설정 (export-ignore)
+RFID_APP/js/recipients.js export-ignore
+"수기 급여제공기록지/js/recipients.js" export-ignore

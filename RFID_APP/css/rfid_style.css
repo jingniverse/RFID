@@ -1,0 +1,1497 @@
+/* 기본 리셋 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+
+body {
+    background-color: #f4f5f7;
+    padding: 12px;
+    font-size: 14px;
+}
+
+/* -----------------------------------------------------------------
+   화면 중앙 정렬 및 최대 가로폭 제한
+   ----------------------------------------------------------------- */
+.container-table {
+    display: table;
+    width: 100%;
+    max-width: 1098px;
+    /* 화면과 인쇄의 100% 동일한 가로폭 및 A4 landscape 최적 정렬을 위해 1098px로 수정 */
+    margin: 0 auto;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 12px 0;
+}
+
+.column-cell {
+    display: table-cell;
+    vertical-align: top;
+    width: 33.33%;
+}
+
+/* 카테고별 독립 박스 */
+.category-card {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 9px;
+    /* 안쪽 여백을 9px로 최적화하여 세로 높이를 다이어트하고 가로폭을 확보, 개행 방지 */
+    margin-bottom: 6px;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* 온오프 토글 버튼 공통 */
+.card-toggle-btn {
+    width: 36px;
+    height: 20px;
+    background: #4caf50;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 2px 3px;
+    flex-shrink: 0;
+}
+
+.card-toggle-btn::after {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    display: block;
+}
+
+.card-toggle-btn.off {
+    background: #bbb;
+    justify-content: flex-start;
+}
+
+.card-toggle-abs {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 20;
+}
+
+.card-toggle-inline {
+    margin-left: 8px;
+    position: relative;
+    z-index: 30;
+}
+
+/* 카드 본문 래퍼 */
+.card-body {
+    position: relative;
+    width: calc(100% + 20px);
+    /* 원래의 20px 보상으로 복원 */
+    margin-left: -10px;
+    margin-right: -10px;
+    margin-bottom: -10px;
+    padding: 0 10px 10px;
+}
+
+/* 카드 비활성 오버레이 */
+.card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    border-radius: 6px;
+}
+
+.card-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 최상단 헤더 */
+.app-top-header {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* 프로필 영역 */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    background: #f0f0f0;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-size: 18px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.badge-id {
+    border: 1px solid #ddd;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-weight: normal;
+    font-size: 13px;
+    color: #555;
+}
+
+.badge {
+    padding: 1px 5px;
+    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-left: 2px;
+}
+
+.badge-gender {
+    color: #e91e63;
+    border-color: #f8bbd0;
+}
+
+.badge-grade {
+    color: #00acc1;
+    border-color: #b2ebf2;
+}
+
+/* 이름 입력 */
+.name-input {
+    width: 155px;
+    border: none;
+    border-bottom: 1.5px solid #ccc;
+    outline: none;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 2px 4px;
+    height: 24px;
+    background: transparent;
+    color: #333;
+}
+
+.name-input::placeholder {
+    color: #bbb;
+    font-weight: normal;
+}
+
+.name-input:focus {
+    border-bottom-color: #1a73e8;
+}
+
+/* 성별 토글 + 등급 선택 */
+.profile-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gender-toggle {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.gender-btn {
+    padding: 3px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    border: none;
+    background: #f5f5f5;
+    color: #888;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.gender-btn.active.female {
+    background: #fce4ec;
+    color: #e91e63;
+}
+
+.gender-btn.active.male {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.grade-select {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 3px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #00acc1;
+    background: #e0f7fa;
+    outline: none;
+    cursor: pointer;
+}
+
+/* 파란색 시간 카드 */
+.time-card-detailed {
+    background-color: #1a73e8;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.time-card-detailed .tc-title {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
+}
+
+.time-card-detailed .tc-row {
+    font-size: 17px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.time-card-detailed .tc-row span {
+    font-weight: bold;
+}
+
+.time-card-detailed .tc-footer {
+    font-size: 17px;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+.time-card-detailed .highlight {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+/* 시간 표시 버튼 */
+.time-display-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.45);
+    color: #fff;
+    font-size: 17px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0 2px;
+    letter-spacing: 0.5px;
+    transition: border-bottom-color 0.15s, color 0.15s;
+}
+
+.time-display-btn:hover,
+.time-display-btn:active {
+    border-bottom-color: #ffeb3b;
+    color: #ffeb3b;
+}
+
+/* 시간 인라인 피커 */
+.tip-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.tip-popup {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 1.5px solid #1a73e8;
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 6px 20px rgba(26, 115, 232, 0.18);
+    z-index: 500;
+    min-width: 152px;
+    animation: tipFadeIn 0.15s ease;
+}
+
+.tip-popup.open {
+    display: flex;
+}
+
+@keyframes tipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.tip-inputs {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.tip-input {
+    width: 40px;
+    padding: 5px 2px;
+    border: 1.5px solid #ddd;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    color: #1a3a6b;
+    outline: none;
+    -moz-appearance: textfield;
+    font-family: inherit;
+}
+
+.tip-input::-webkit-outer-spin-button,
+.tip-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.tip-input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.12);
+}
+
+.tip-sep {
+    color: #1a73e8;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.tip-ok {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 0;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+
+.tip-ok:hover {
+    background: #1558d0;
+}
+
+@media print {
+
+    .tip-popup,
+    .tip-wrap .tip-popup {
+        display: none !important;
+    }
+}
+
+/* -----------------------------------------------------------------
+   디자인 디테일 튜닝: 스크린샷 완벽 싱크로율 스타일
+   ----------------------------------------------------------------- */
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 3D 고품질 아이콘 스프라이트 */
+.service-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url('icons.png');
+    background-repeat: no-repeat;
+    background-size: 420% 280%;
+    image-rendering: -webkit-optimize-contrast;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.service-icon.icon-hands-heart {
+    background-position: 7% 50%;
+}
+
+.service-icon.icon-green-check {
+    background-position: 50% 50%;
+}
+
+.service-icon.icon-ecg-heart {
+    background-position: 93% 50%;
+}
+
+/* 소제목: 이미지처럼 테두리 밑줄 없이 완전한 무테(Borderless)로 구성 */
+.sub-title {
+    font-size: 16px;
+    /* 텍스트를 약간 더 돋보이게 16px로 변경 */
+    font-weight: bold;
+    color: #1e3a8a;
+    /* 고급스러운 딥블루 톤 */
+    margin-bottom: 6px;
+    padding-bottom: 0;
+    border-bottom: none;
+    /* 하단 실선 테두리를 완전히 제거 */
+    position: relative;
+    z-index: 20;
+}
+
+/* 제공 시간 행 및 알약 모양 입력 칸 */
+.time-input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.time-input-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: normal;
+}
+
+/* 스크린샷과 완벽히 일치하는 둥글고 큼직한 알약모양 입력 칸 - 시안 완벽 이식 */
+.time-input-num {
+    width: 90px;
+    /* 큼직하고 시원한 가로폭 */
+    height: 36px;
+    /* 도톰한 높이 */
+    padding: 2px 16px 2px 4px;
+    /* 우측에 정갈한 패딩 부여 */
+    border: 1.5px solid #d8d8d8;
+    /* 평상시 테두리는 기존의 차분하고 정갈한 검은빛 연회색으로 완벽 복원 */
+    border-radius: 18px;
+    /* 완전한 3D 알약형 둥근 모서리 */
+    text-align: right;
+    /* 숫자 0이 우측에 안정적으로 정렬 */
+    font-size: 18px;
+    /* 가독성 향상을 위해 16px에서 18px로 시원하게 확대 */
+    font-weight: bold;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.time-input-num:focus {
+    border: 2px solid #ffb300 !important;
+    /* 포커스 시에만 아주 선명하고 쨍하게 빛나는 옐로우 골드 선으로 명확히 활성화 */
+    box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.08) !important;
+    /* 티 나지 않고 보일듯 말듯 극도로 은은한 금빛 포커스 광채로 절제 */
+}
+
+.time-input-num.time-entered {
+    font-weight: bold;
+    color: #1a3a6b;
+}
+
+/* 🌟 인지활동/인지관리/정서지원 상단의 제공시간은 박스 테두리를 지우고 순수 텍스트 형태로만 깔끔하게 노출 */
+.time-input-readonly-text {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    pointer-events: none;
+    padding-right: 6px !important;
+    width: 60px !important;
+}
+
+/* 🌟 긴 텍스트와 시간 입력 필드가 만났을 때 밀리는 현상을 원천 방지하기 위한 미세 조정 */
+.time-input-row label {
+    font-size: 13px;
+    /* 14px에서 13px로 조절하여 정서지원 등 긴 레이블이 삐져나가지 않도록 완벽 보존 */
+}
+
+/* 🌟 사용자의 피드백을 반영하여 얇은 검은색 테두리와 둥근 모서리를 가진 체크박스 */
+input[type="checkbox"].custom-cb-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 1.2px solid #333333;
+    /* 구분점만 명확히 생기도록 얇고 선명한 검은색 테두리 */
+    border-radius: 5px;
+    /* 사용자가 선호하는 원래의 부드러운 둥근 모서리 복원 */
+    outline: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    transition: background-color 0.12s, border-color 0.12s;
+    margin: 2px 4px 0 0;
+    /* 위로 약간 치우치는 현상을 방지하기 위해 margin-top을 2px로 미세 보정하여 시각적 정중앙 정렬 강제 */
+    align-self: center;
+    /* 버티컬(세로) 정중앙 완벽 밀착 */
+    flex-shrink: 0;
+}
+
+input[type="checkbox"].custom-cb-input:checked {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+}
+
+input[type="checkbox"].custom-cb-input:checked::before {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 10px;
+    border: solid #ffffff;
+    border-width: 0 2.5px 2.5px 0;
+    /* 사용자께서 만족하신 각진 체크 모양 유지 */
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+    /* 살짝 위로 센터링 */
+}
+
+
+/* 🌟 스크린샷의 둥근 라디오 버튼 (Custom Radio) - 파란색 도트가 있는 고급스러운 라디오 스타일 */
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    /* 이미지처럼 볼륨감 있게 20px로 미세 조정하여 세로 공간 절약 */
+    height: 20px;
+    border: 1.5px solid #d8d8d8;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fcfcfc;
+    transition: all 0.15s ease;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+input[type="radio"]:checked {
+    border-color: #1a73e8;
+    background-color: #1a73e8;
+    /* 이미지처럼 선명한 파란색 원 배경 */
+}
+
+input[type="radio"]:checked::before {
+    content: '';
+    width: 8px;
+    /* 내부의 정밀한 흰색 도트 구현 */
+    height: 8px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* 레이블 간격 타이트 복원 및 개행(줄바꿈) 원천 차단 */
+label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    /* 콤팩트한 여백으로 가로밀림 제거 */
+    margin-bottom: 6px;
+    /* 오리지널 상하 높이 복원 */
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: normal;
+    /* line-height: 1은 폰트 윗부분 컷팅 및 아래 치우침을 유발하므로 normal로 복원하여 브라우저의 자연스러운 폰트 중심 계산 유도 */
+    white-space: nowrap;
+    /* 텍스트가 절대 아래로 흘러내려 깨지지 않도록 강제 방지! */
+}
+
+.sub-text {
+    font-size: 11px;
+    /* 괄호 안의 글자 크기를 작게 조율하여 밀림 방지 및 디테일 상승 */
+    font-weight: normal;
+    /* 일반 두께로 처리하여 시인성 최적화 */
+    color: inherit;
+    /* 회색 대신 기존 본문 텍스트와 완벽히 동일한 색상으로 상속 */
+    margin-left: 0;
+    /* 띄어쓰기 없이 텍스트 옆에 찰싹 붙도록 여백 완전 제거 */
+}
+
+.main-label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    /* 상위 항목(대분류) ↔ 하위 항목(소분류) 간격: 6px (소분류 간격 6px보다 넓게 설계하여 위계 확보) */
+    display: flex;
+    /* block 대신 flex로 변경하여 내부 체크박스와의 수직 중앙 정렬 강제 */
+    align-items: center;
+    /* 세로(버티컬) 축 완벽 정렬 */
+    gap: 4px;
+    /* 소분류(label)들과 마찬가지로 체크박스와 텍스트 사이의 가로 여백을 동일한 간격으로 벌려줌 */
+    font-size: 13.5px;
+    /* 미세하게 13.5px로 낮춤 */
+    letter-spacing: -0.7px;
+    /* 글자 사이 간격을 세련되게 좁혀 가로폭 완벽 방어 */
+    line-height: normal;
+    /* normal로 복원 */
+    white-space: nowrap;
+    /* 화면이 좁아져도 한 줄로 아름답게 안착되도록 강제 적용 */
+}
+
+.main-label-alone {
+    margin-bottom: 8px;
+}
+
+/* 그리드 레이아웃 */
+.sub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 6px;
+    padding-left: 20px;
+    margin-bottom: 4px;
+}
+
+/* 하위 항목(소분류) 간의 상하 간격을 6px로 시원하게 벌리고, 마지막 소분류와 인풋 사이는 6px로 밀착 */
+.sub-grid label:not(.main-label) {
+    margin-bottom: 0 !important;
+}
+
+/* Grid 내부 label 마진 중첩 원천 제거 */
+.single-col-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding-left: 20px;
+    margin-bottom: 6px;
+}
+
+.main-group-grid {
+    gap: 12px 6px;
+    margin-bottom: 8px;
+}
+
+/* 상위 항목(대분류) 간의 세로 간격을 12px로 타이트하게 압축 */
+.main-group-grid label {
+    margin-bottom: 0 !important;
+}
+
+/* Grid 내부 label 마진 중첩 원천 제거 */
+
+/* 기타사항 둥근 텍스트 필드 - 큼직하고 둥근 프리미엄 규격 */
+.text-input {
+    width: calc(100% - 20px);
+    margin-left: 20px;
+    padding: 10px 16px;
+    /* 위아래 패딩을 12px에서 10px로 미세 다이어트하여 세로 오버플로우 방지 */
+    height: 42px;
+    /* 높이를 48px에서 42px로 콤팩트하게 다이어트 */
+    border: 1.5px solid #d8d8d8;
+    /* 정갈한 연회색 테두리 */
+    border-radius: 12px;
+    /* 스크린샷의 말랑하고 둥근 모서리 */
+    font-size: 14px;
+    margin-bottom: 8px;
+    /* 하단 마진을 12px에서 8px로 축소하여 여백 밀림 방지 */
+    outline: none;
+    background-color: #fff;
+    transition: border-color 0.15s;
+}
+
+.text-input:focus {
+    border: 2px solid #ffb300 !important;
+    box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.08) !important;
+}
+
+.text-input::placeholder {
+    color: #bbb;
+}
+
+/* -----------------------------------------------------------------
+   기타 영역 스타일 및 액션바
+   ----------------------------------------------------------------- */
+.radio-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 10px;
+    background: transparent;
+    padding: 0;
+}
+
+.radio-row-title {
+    font-weight: bold;
+    font-size: 15.5px;
+    color: #1e3a8a;
+    /* 딥블루 메인 텍스트 */
+    margin-bottom: 5px;
+}
+
+.radio-row-title span {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* 선명한 빨간색 별 */
+.radio-options {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    /* 옵션 가로 고른 정렬 */
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.radio-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 0 !important;
+    cursor: pointer;
+}
+
+.counter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.counter-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-circle {
+    width: 34px;
+    /* 수량조절 원형 버튼을 34px로 큼직하고 안정적이게 상향 */
+    height: 34px;
+    border: 1.2px solid #ccc;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    background: #fff;
+    font-weight: bold;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+}
+
+.btn-circle:hover {
+    background: #f8fafc;
+    border-color: #1a73e8;
+    color: #1a73e8;
+}
+
+.counter-input {
+    background: #fff;
+    text-align: center;
+    font-size: 18px;
+    /* 숫자를 크고 뚜렷하게 */
+    font-weight: bold;
+    color: #111827;
+    width: 76px;
+    /* 스크린샷과 동일하게 널찍하고 둥글둥글한 알약 형태의 입력박스 설계 */
+    height: 34px;
+    /* 세로 높이도 알약형 맞춤 */
+    cursor: default;
+    border: 1.2px solid #ccc;
+    border-radius: 17px;
+    /* 타원형 완전 라운드 */
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.counter-input:focus {
+    border: 2px solid #ffb300 !important;
+    /* 시간 입력 상자와 똑같이 쨍한 옐로우 골드로 변환 */
+    box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.08) !important;
+    /* 보일듯 말듯 은은한 골드 포커스 광채 적용 */
+}
+
+.textarea-box {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid #d8d8d8;
+    /* 평상시 테두리와 일관성 유지 */
+    border-radius: 10px;
+    /* 카드의 둥근 감성 이식 */
+    resize: none;
+    font-size: 14px;
+    /* 기존 13px -> 14px로 입력 텍스트 크기 확대 */
+    margin-bottom: 4px;
+    background: #f9f9f9;
+    line-height: 20px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.textarea-box:focus {
+    border-color: #1a73e8;
+    background: #fff;
+}
+
+.textarea-box::placeholder {
+    color: #e53935 !important;
+    /* 가시성 높고 선명한 프리미엄 레드 컬러 */
+    font-size: 14px !important;
+    /* 가로폭 기준 두 줄 내에 완전 노출되도록 14px로 축소 */
+    font-weight: bold !important;
+    /* 굵게 강조 */
+    line-height: 1.4;
+}
+
+.warning-text {
+    font-size: 11px;
+    color: #e91e63;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+}
+
+.bottom-action-bar {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.btn-cancel {
+    flex: 1;
+    background: #f0f0f0;
+    color: #555;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-submit {
+    flex: 2;
+    background: #1a73e8;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* 🖨️ 인쇄 설정 - 화면의 프리미엄 감성 그대로 A4 한 장에 완벽 안착 */
+@media print {
+
+    html,
+    body {
+        height: 100% !important;
+        overflow: hidden !important;
+        /* 브라우저의 미세한 마진/패딩 누적으로 인한 불필요한 빈 2페이지 생성 트리거 원천 차단 */
+        margin: 0 !important;
+    }
+
+    @page {
+        size: A4 landscape;
+        margin: 12px;
+        /* 화면 padding인 12px과 물리적 여백을 100% 완벽히 똑같이 일치시킴 */
+    }
+
+    /* 잉크 절약을 위해 인쇄 시 맨 뒷배경색(바디 배경)은 투명(종이 흰색)하게 처리 */
+    body {
+        background-color: transparent !important;
+        padding: 8px 0 0 0 !important;
+        /* 프린터 하드웨어 인쇄 한계선에 의한 최상단 헤더 잘림 방지용 안전 상단 마진 8px 부여 */
+        font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif !important;
+    }
+
+    /* 화면의 가로폭과 100% 완벽히 일치시켜 개행(줄바꿈) 위치까지 동일하게 제어 */
+    .container-table {
+        width: 1098px !important;
+        max-width: 1098px !important;
+        margin: 0 auto !important;
+        border-spacing: 12px 0 !important;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* 🚫 인쇄 시 사용자 요청에 따라 온오프 토글 버튼, 주간/월간/필요시 체크박스 및 글자 수 카운터는 완벽히 숨김 */
+    .card-toggle-btn,
+    .card-toggle-abs,
+    .card-toggle-inline,
+    .weekly-service-label,
+    .char-counter {
+        display: none !important;
+    }
+
+    /* 종이에 인쇄할 때는 불필요한 '취소/전송' 하단 액션바 및 모달 숨김 */
+    .bottom-action-bar,
+    .exceed-overlay,
+    .exceed-panel {
+        display: none !important;
+    }
+
+    /* 🎨 인쇄 시 브라우저가 배경이나 그림자, 둥근 테두리를 임의로 지우는 현상 철저 방지 */
+    .category-card {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        border-radius: 12px !important;
+    }
+
+    .time-card-detailed {
+        background-color: #1a73e8 !important;
+        color: #ffffff !important;
+    }
+
+    .time-card-detailed .highlight {
+        color: #ffeb3b !important;
+    }
+
+    .time-display-btn {
+        border-bottom-color: rgba(255, 255, 255, 0.45) !important;
+        color: #ffffff !important;
+    }
+
+    .gender-btn.active.female {
+        background-color: #fce4ec !important;
+        color: #e91e63 !important;
+    }
+
+    .gender-btn.active.male {
+        background-color: #e3f2fd !important;
+        color: #1565c0 !important;
+    }
+
+    .grade-select {
+        background-color: #e0f7fa !important;
+        color: #00acc1 !important;
+        border: 1px solid #ddd !important;
+    }
+
+    /* 얇은 검은색 테두리와 둥근 모서리를 가진 커스텀 체크박스 인쇄 시 시각 속성 강제 부여 */
+    input[type="checkbox"].custom-cb-input {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        background-color: #ffffff !important;
+        border: 1.2px solid #333333 !important;
+    }
+
+    input[type="checkbox"].custom-cb-input:checked {
+        background-color: #1a73e8 !important;
+        border-color: #1a73e8 !important;
+    }
+
+    input[type="checkbox"].custom-cb-input:checked::before {
+        border-color: #ffffff !important;
+    }
+
+    /* 파란색 도트가 들어간 커스텀 라디오 버튼 인쇄 시 시각 속성 강제 부여 */
+    input[type="radio"] {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        background-color: #fcfcfc !important;
+        border: 1.5px solid #d8d8d8 !important;
+    }
+
+    input[type="radio"]:checked {
+        border-color: #1a73e8 !important;
+        background-color: #1a73e8 !important;
+    }
+
+    input[type="radio"]:checked::before {
+        background-color: #ffffff !important;
+    }
+
+    /* 알약 모양 시간/횟수 입력 칸 인쇄 시 스타일 보존 */
+    .time-input-num {
+        background-color: #ffffff !important;
+        border: 1.5px solid #d8d8d8 !important;
+        color: #333333 !important;
+    }
+
+    .time-input-num.time-entered {
+        color: #1a3a6b !important;
+    }
+
+    .time-input-readonly-text {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .counter-input {
+        background-color: #ffffff !important;
+        border: 1.2px solid #ccc !important;
+        color: #111827 !important;
+    }
+
+    .text-input {
+        background-color: #ffffff !important;
+        border: 1.5px solid #d8d8d8 !important;
+    }
+
+    .textarea-box {
+        background-color: #f9f9f9 !important;
+        border: 1px solid #ccc !important;
+    }
+
+    .btn-circle {
+        background-color: #ffffff !important;
+        border: 1.2px solid #ccc !important;
+        color: #333333 !important;
+    }
+
+    .avatar {
+        background-color: #f0f0f0 !important;
+    }
+
+    .badge-id {
+        border-color: #ddd !important;
+        color: #555 !important;
+    }
+
+    .badge {
+        border-color: #ccc !important;
+        background-color: #fff !important;
+    }
+
+    .badge-gender {
+        color: #e91e63 !important;
+        border-color: #f8bbd0 !important;
+    }
+
+    .badge-grade {
+        color: #00acc1 !important;
+        border-color: #b2ebf2 !important;
+    }
+}
+
+/* 초과 경고 모달 */
+.exceed-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1100;
+    display: none;
+}
+
+.exceed-overlay.open {
+    display: block;
+}
+
+.exceed-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid #e53935;
+    border-radius: 14px;
+    padding: 28px 32px 22px;
+    z-index: 1101;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-width: 270px;
+    box-shadow: 0 10px 40px rgba(229, 57, 53, 0.2);
+    text-align: center;
+}
+
+.exceed-panel.open {
+    display: flex;
+}
+
+.exceed-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1e3a8a;
+    /* 프리미엄 블루톤 컬러 */
+    line-height: 1;
+    width: 100%;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eaeaea;
+    /* 보일듯 말듯 은은한 구분선 */
+    margin-bottom: 4px;
+}
+
+.exceed-msg {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.7;
+}
+
+.exceed-msg b {
+    color: #e53935;
+}
+
+.exceed-btn {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 36px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    margin-top: 4px;
+}
+
+.exceed-btn:hover {
+    background: #1558d0;
+}
+
+/* ──────────────── 주간서비스 관련 스타일 ──────────────── */
+.app-top-header-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.weekly-service-label {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: bold;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* 주간서비스 메인 체크박스 전용 스타일 */
+input[type="checkbox"].weekly-main-cb {
+    border-color: #dc2626 !important;
+}
+
+input[type="checkbox"].weekly-main-cb:checked {
+    background-color: #dc2626 !important;
+    border-color: #dc2626 !important;
+}
+
+/* 주간서비스로 체크된 개별 항목에 대한 디자인 */
+input[type="checkbox"].custom-cb-input.weekly-checked:checked {
+    background-color: #ef4444 !important;
+    border-color: #ef4444 !important;
+}
+
+label:has(input[type="checkbox"].custom-cb-input.weekly-checked:checked) {
+    background-color: #ffebee !important;
+    /* 옅은 핑크색 배경 */
+    border-radius: 4px;
+}
+
+/* ──────────────── 수급자 선택 제어 패널 슬라이딩 드로어 디자인 (Premium Responsive Drawer) ──────────────── */
+.control-panel {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.08), 0 1px 8px rgba(0, 0, 0, 0.02);
+    width: 320px;
+    box-sizing: border-box;
+    transform: translateX(calc(100% + 24px));
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: visible;
+}
+
+.control-panel.open {
+    transform: translateX(0);
+}
+
+/* 위젯 세부 스타일 */
+.recipient-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 패널 헤더 스타일 */
+.control-panel-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.control-panel-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: bold;
+    color: #1e1e2f;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-align: left;
+}
+
+/* 플로팅 토글 핸들 탭 (드로어 좌측 가장자리에 결합) */
+.control-panel-toggle {
+    position: absolute;
+    left: -36px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 96px;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: none;
+    border-radius: 16px 0 0 16px;
+    box-shadow: -5px 0 15px rgba(118, 75, 162, 0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    padding: 0;
+    z-index: 10001;
+    /* 드로어 테두리보다 약간 위에 위치 */
+}
+
+.control-panel-toggle:hover {
+    width: 40px;
+    left: -40px;
+    background: linear-gradient(135deg, #8a5ec2 0%, #7d93ff 100%);
+    box-shadow: -8px 0 20px rgba(118, 75, 162, 0.35);
+}
+
+.control-panel-toggle .toggle-arrow {
+    display: inline-block;
+    font-size: 12px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(0deg);
+    /* 기본값: 왼쪽 가리킴 */
+}
+
+.control-panel.open .control-panel-toggle .toggle-arrow {
+    transform: rotate(180deg);
+    /* 열린 상태: 오른쪽 가리킴 */
+}
+
+
+.recipient-list-section h4.list-title {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #764ba2;
+    font-weight: bold;
+    border-left: 3.5px solid #764ba2;
+    padding-left: 6px;
+    text-align: left;
+}
+
+/* 검색 필드 */
+.search-box-wrap {
+    position: relative;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 30px 8px 12px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    background: #fff;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    border-color: #764ba2;
+    box-shadow: 0 0 0 2px rgba(118, 75, 162, 0.1);
+}
+
+.btn-search-clear {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    display: none;
+    line-height: 1;
+}
+
+.btn-search-clear:hover {
+    color: #333;
+}
+
+/* 수급자 목록 컨테이너 및 스크롤바 */
+.recipient-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 190px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.recipient-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.recipient-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+/* 개별 수급자 리스트 행 스타일 (Premium hover) */
+.recipient-row {
+    background: #ffffff;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    padding: 8px 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    gap: 6px;
+}
+
+.recipient-row:hover {
+    transform: translateY(-0.5px);
+    box-shadow: 0 4px 10px rgba(118, 75, 162, 0.06);
+    border-color: #764ba2;
+    background-color: #fcfbff;
+}
+
+.recipient-row:active {
+    transform: translateY(0);
+    background-color: #f3f0fa;
+}
+
+.row-info-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+    overflow: hidden;
+    font-size: 12.5px;
+}
+
+.row-name {
+    font-weight: bold;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row-grade {
+    font-size: 9.5px;
+    background: rgba(0, 172, 193, 0.08);
+    color: #00acc1;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.row-birth {
+    color: #777;
+    font-family: monospace;
+}
+
+.row-cert {
+    color: #999;
+    font-family: monospace;
+}
+
+.row-sep {
+    color: #ccc;
+    font-size: 8px;
+}
+
+/* 치매환자 배지 */
+.badge-dementia {
+    font-size: 9.5px;
+    background: rgba(147, 51, 234, 0.1);
+    color: #9333ea;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* 수급자 대시보드 열기 버튼 */
+.btn-open-manage {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    color: white;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.btn-open-manage:hover {
+    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.25);
+    filter: brightness(1.05);
+}
+
+/* ──────────────── 인쇄(미리보기) 시 제어 패널 완벽 숨김 ──────────────── */
+@media print {
+
+    .control-panel,
+    .control-panel-toggle {
+        display: none !important;
+    }
+}
