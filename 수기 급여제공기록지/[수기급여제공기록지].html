@@ -65,10 +65,13 @@
 <body>
 
   <!-- 🔄 RFID APP형 전환용 플로팅 버튼 (인쇄 시 자동 숨김) -->
-  <div class="version-switch-floating">
+  <div class="version-switch-floating" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
     <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver">
       📱 RFID APP형 화면으로 전환
     </a>
+    <button onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');" class="btn-switch-ver" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+      📖 사용 설명서
+    </button>
   </div>
 
   <!-- 제어 패널 (화면 입력 시에만 나타나고, 인쇄 시 자동 숨김 처리됨) -->

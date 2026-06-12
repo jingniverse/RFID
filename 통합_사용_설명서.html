@@ -41,7 +41,7 @@
 
     .manual-container {
       width: 100%;
-      max-width: 1250px;
+      max-width: 800px;
       height: auto;
       /* 고정 높이 제거 -> 콘텐츠 크기에 딱 맞춰 밀착 */
       max-height: 95vh;
@@ -68,7 +68,7 @@
     /* 메인 래퍼 및 외부 뒤로가기 버튼 */
     .main-wrapper {
       width: 100%;
-      max-width: 1250px;
+      max-width: 800px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -121,14 +121,12 @@
       text-align: right;
     }
 
-    /* 4단계 2x2 정밀 그리드 */
+    /* 2단계 세로형 타임라인 그리드 */
     .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: auto auto;
-      /* 고정 1fr 2fr 제거 -> 행마다 실제 필요한 높이만큼만 최소 적용 */
-      gap: 10px;
-      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px 20px;
       flex-grow: 1;
       background: #fafafc;
     }
@@ -137,15 +135,30 @@
       background: #ffffff;
       border: 1px solid #eef0f6;
       border-radius: 12px;
-      padding: 14px 16px 12px 16px;
-      /* 상단 여백 확보, 하단 남는 여백 축소 */
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.01);
+      gap: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.01);
       transition: all 0.2s ease;
-      min-height: 190px;
-      /* 1번,2번 카드가 너무 쪼그라들지 않도록 절반 크기만큼의 최적의 최소 높이 확보 */
+    }
+
+    /* 단계 연결용 아래 방향 화살표 스타일 */
+    .step-connector {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: -4px 0;
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: bold;
+      opacity: 0.7;
+      animation: pulseArrow 2s infinite ease-in-out;
+    }
+    
+    @keyframes pulseArrow {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(4px); opacity: 0.9; }
     }
 
     .step-card:hover {
@@ -310,7 +323,7 @@
 
     .tips-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr;
       gap: 10px;
     }
 
@@ -391,119 +404,59 @@
       <!-- 1. 초슬림 상단 헤더 -->
       <div class="manual-header">
         <h1>👥 RFID & 수기 급여제공기록지 통합 설명서</h1>
-        <p>수급자 등록부터 기록지 자동 기입 및 최종 출력까지 10초 만에 끝내는 전체 업무 흐름</p>
       </div>
 
-    <!-- 2. 2x2 정교한 스크롤 방지 4단계 그리드 -->
+    <!-- 2. 직관적인 수직 타임라인 2단계 레이아웃 -->
     <div class="steps-grid">
 
       <!-- STEP 1 -->
       <div class="step-card">
         <div class="step-card-header">
           <div class="step-card-num">1</div>
-          <h3>수급자 등록 및 변경하기 <a href="수기 급여제공기록지/[관리자] 수급자 등록 및 변경하기.html" target="_blank" class="file-badge">수급자
-              등록 및 변경하기.html ↗</a></h3>
+          <h3>수급자 등록 및 변경하기 <span class="file-badge">관리자 대시보드</span></h3>
         </div>
         <p class="step-desc">수급자의 기본 정보와 표준 일정을 새롭게 등록하거나 바꿀 때 사용합니다.</p>
         <ul class="step-instructions">
-          <li><span class="action-num">1</span> 내가 현재 실행하고 있는 폴더 내의 <a href="수기 급여제공기록지/[관리자] 수급자 등록 및 변경하기.html"
-              target="_blank" class="inline-link"><strong>수급자 등록 및 변경하기.html</strong></a> 파일을 클릭하여 켭니다.</li>
-          <li><span class="action-num">2</span> 왼쪽 양식에서 정보를 입력하고 제공 시간과 제공 일정을 <strong>[저장하기]</strong>로 저장합니다.</li>
+          <li><span class="action-num">1</span> 기록지 프로그램 화면 우측 패널 하단의 <strong>[👥 수급자 정보 관리 / 신규 등록]</strong> 버튼을 클릭하여 대시보드 창을 켭니다.</li>
+          <li><span class="action-num">2</span> 대시보드 화면에서 신규 정보를 작성하거나 기존 정보를 수정한 후 <strong>[저장하기]</strong>를 클릭하면 앱에 실시간으로 즉시 자동 반영됩니다.</li>
         </ul>
+      </div>
+
+      <!-- 단계 연결용 아래 방향 화살표 -->
+      <div class="step-connector">
+        ↓
       </div>
 
       <!-- STEP 2 -->
       <div class="step-card">
         <div class="step-card-header">
           <div class="step-card-num">2</div>
-          <h3>등록된 수급자 목록 다운로드 <span class="file-badge">recipients.js</span></h3>
-        </div>
-        <p class="step-desc">대시보드에서 등록한 수급자 명단을 컴퓨터에 확실하게 보관·저장합니다.</p>
-        <ul class="step-instructions">
-          <li><span class="action-num">1</span> 화면 맨 아래 <strong>[⚙️ 등록된 수급자 목록 다운로드 (recipients.js)]</strong> 단추를 클릭합니다.
-          </li>
-          <li><span class="action-num">2</span> 윈도우의 <strong>'다운로드(Downloads)'</strong> 폴더에 파일이 잘 생성되었는지 다운로드 완료를 확인합니다.
-          </li>
-        </ul>
-      </div>
-
-      <!-- STEP 3 -->
-      <div class="step-card">
-        <div class="step-card-header">
-          <div class="step-card-num">3</div>
-          <h3>기록지 프로그램에 자동 업로드하기 <span class="file-badge">수급자 목록 업로드.bat</span></h3>
-        </div>
-        <p class="step-desc">다운로드받은 최신 수급자 파일을 기록지 안으로 자동 동기화·업로드시킵니다.</p>
-        <ul class="step-instructions">
-          <li><span class="action-num">1</span> 내가 현재 실행하고 있는 폴더 내의 <strong>수급자 목록 업로드.bat</strong>를 마우스로
-            <strong>더블클릭</strong>합니다.
-          </li>
-          <li><span class="action-num">2</span> 검은 창이 뜨며 <span style="color: var(--success); font-weight: bold;">"업로드
-              완료!"</span> 알림이 나오면 키보드의 아무 키나 눌러 창을 닫아줍니다.</li>
-          <li
-            style="font-size: 12.5px; color: #c62828; font-weight: 500; margin-top: auto !important; padding: 10px 14px; background-color: #ffebee; border: 1.2px dashed #e57373; border-radius: 6px; padding-left: 14px !important; line-height: 1.5; list-style: none; word-break: keep-all;">
-            ⚠️ <strong>중요 주의사항:</strong> <strong>'수급자 목록 업로드.bat'</strong> 파일은 절대 폴더 밖으로 직접 이동시키면 안 됩니다! 바탕화면에 꺼내두고
-            사용하시려면 파일 마우스 우클릭 ➔ 보내기 ➔ <strong>바탕화면에 바로가기 만들기</strong>로 바로가기 아이콘을 생성해 주세요.
-          </li>
-        </ul>
-      </div>
-
-      <!-- STEP 4 -->
-      <div class="step-card">
-        <div class="step-card-header">
-          <div class="step-card-num">4</div>
           <h3>기록지 기입 및 최종 출력 마감
-            <a href="./RFID_APP/[RFID APP형].html" target="_blank" class="file-badge">[RFID APP형] ↗</a>
-            <a href="./수기 급여제공기록지/[수기급여제공기록지].html" target="_blank" class="file-badge">[수기급여제공기록지] ↗</a>
+            <span class="file-badge">RFID APP형</span>
+            <span class="file-badge">수기급여제공기록지</span>
           </h3>
         </div>
         <p class="step-desc">일정을 자동 완성(더블클릭)하고 출력하여 하루 마무리를 짓습니다.</p>
         <ul class="step-instructions">
-          <li><span class="action-num">1</span> 해당 폴더의 <a href="./RFID_APP/[RFID APP형].html" target="_blank"
-              class="inline-link"><strong>[RFID APP형].html</strong></a> 또는
-            <a href="./수기 급여제공기록지/[수기급여제공기록지].html" target="_blank"
-              class="inline-link"><strong>[수기급여제공기록지].html</strong></a>(기록 창)을 켭니다. <strong>[수기기록지/APP형 공통]</strong>
-            목록에서 수급자 이름을 <strong>[더블클릭]</strong>하여 하루 일정을 1초 만에 자동 채웁니다.
-          </li>
-          <li><span class="action-num">2</span> <strong>[APP형]</strong> 입력값 정밀 검토 후 하단의 <strong>[전송하기]</strong> 버튼을 클릭하면
-            화면 출력 인쇄 창이 자동으로 열리며 최종 마감됩니다.</li>
-          <li><span class="action-num">3</span> <strong>[수기기록지]</strong> 입력값 정밀 검토 후 우측 상단의
-            <strong>[기록지인쇄/PDF저장]</strong> 버튼을 클릭하여 인쇄 및 PDF로 저장해 마감합니다.
-          </li>
+          <li><span class="action-num">1</span> <strong>[RFID 기록지 프로그램]</strong> 실행파일을 실행한 뒤, 화면 우측의 수급자 목록에서 이름을 <strong>[더블클릭]</strong>하여 하루 일정을 1초 만에 자동 채웁니다.</li>
+          <li><span class="action-num">2</span> <strong>[APP형]</strong> 입력값 정밀 검토 후 하단의 <strong>[전송하기]</strong> 버튼을 클릭하면 화면 출력 인쇄 창이 자동으로 열리며 최종 마감됩니다.</li>
+          <li><span class="action-num">3</span> <strong>[수기기록지]</strong> 입력값 정밀 검토 후 우측 상단의 <strong>[기록지인쇄/PDF저장]</strong> 버튼을 클릭하여 인쇄 및 PDF로 저장해 마감합니다.</li>
         </ul>
       </div>
 
     </div>
 
-    <!-- 3. 하단 슬림 3열 가로 팁 바 -->
+    <!-- 3. 하단 슬림 팁 바 -->
     <div class="tips-section">
-      <div class="tips-title">💡 알아두면 매우 편리한 3대 꿀팁</div>
+      <div class="tips-title">💡 알아두면 매우 편리한 핵심 꿀팁</div>
       <div class="tips-grid">
 
         <!-- 꿀팁 1 -->
         <div class="tip-callout">
-          <span class="tip-icon">🎛️</span>
+          <span class="tip-icon">💻</span>
           <div class="tip-body">
-            <h4>자유로운 화면 이동</h4>
-            <p>수급자 목록 상자는 글자가 없는 빈 배경 부분을 꾹 누르고 끌면 지연 없이 부드럽게 어디로든 이동합니다.</p>
-          </div>
-        </div>
-
-        <!-- 꿀팁 2 -->
-        <div class="tip-callout">
-          <span class="tip-icon">⏰</span>
-          <div class="tip-body">
-            <h4>경고 팝업 가림막 차단</h4>
-            <p>수급자를 연속 더블클릭할 때 기존 수치가 자동 청소(cancelForm)된 후 입력되어 시간 초과 경고 팝업이 뜨지 않습니다.</p>
-          </div>
-        </div>
-
-        <!-- 꿀팁 3 -->
-        <div class="tip-callout">
-          <span class="tip-icon">✍️</span>
-          <div class="tip-body">
-            <h4>직접 메모장 수동 입력</h4>
-            <p><code>recipients.js</code>를 열고 직접 쓸 땐 <code>"id"</code>를 과감히 지워도 이름_생년월일로 고유 ID가 자동 생성(대안 B)됩니다.</p>
+            <h4>종료하지 않고 트레이(우측 하단)에서 상시 대기</h4>
+            <p>인터넷 화면 창을 닫아도 프로그램은 완전히 종료되지 않고 <strong>화면 우측 하단 작업표시줄(숨겨진 아이콘 목록 ▲)</strong>에 상시 대기 상태로 유지됩니다. 매번 파일을 찾아 다시 실행할 필요 없이 언제든 즉시 열어 관리하실 수 있습니다.</p>
           </div>
         </div>
 
@@ -512,6 +465,22 @@
 
   </div> <!-- manual-container 닫기 -->
 </div> <!-- main-wrapper 닫기 -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 팝업으로 열렸거나 창 닫기가 가능한 환경인 경우 뒤로가기 링크를 창 닫기로 전환
+    const backLink = document.querySelector('.btn-back-text');
+    if (backLink && (window.opener || window.history.length === 1)) {
+      backLink.innerHTML = '✕ 설명서 창 닫기';
+      backLink.href = '#';
+      backLink.title = '설명서 창 닫기';
+      backLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.close();
+      });
+    }
+  });
+</script>
 
 </body>
 
