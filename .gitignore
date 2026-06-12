@@ -13,3 +13,7 @@ Thumbs.db
 # 3. 무거운 종속성 및 빌드 결과물 업로드 차단
 node_modules/
 dist/
+
+# 4. AI 비서 규칙 파일 업로드 차단
+.antigravity_rules.md
+.project_rules.md
