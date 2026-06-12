@@ -21,7 +21,8 @@
       "target": [
         "portable"
       ],
-      "icon": "rfid_icon.png"
+      "icon": "rfid_icon.png",
+      "artifactName": "RFID_v${version}.${ext}"
     },
     "files": [
       "**/*",
