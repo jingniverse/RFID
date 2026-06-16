@@ -7,11 +7,16 @@
     <title>장기요양급여 제공기록지 (RFID APP형)</title>
     <link rel="stylesheet" href="css/rfid_style.css">
     <style>
+        /* 🔄 버전 전환 플로팅 컨테이너 스타일 정의 (친절한 주석 추가) */
         .version-switch-floating {
             position: fixed;
             top: 24px;
             left: 24px;
             z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
         }
         .btn-switch-ver {
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
@@ -38,25 +43,366 @@
             transform: translateY(-1px);
         }
         @media print {
-            .version-switch-floating {
+            .version-switch-floating,
+            .control-panel,
+            .control-panel-toggle {
                 display: none !important;
             }
         }
-        @media (max-width: 1024px) {
+        /* 📱 화면이 작아져 플로팅 버튼이 본문 영역을 침범하거나 가리기 시작할 때 (1650px 이하),
+           body 레이아웃을 세로(column) 정렬로 바꾸고 플로팅 버튼들을 상단에 가로(row) 형태로 나란히 배치해 가리지 않게 합니다. (친절한 한글 주석) */
+        @media (max-width: 1650px) {
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
             .version-switch-floating {
                 position: static;
-                margin-bottom: 15px;
+                margin: 0 auto 16px auto;
                 display: flex;
+                flex-direction: row;
                 justify-content: center;
-                width: 100%;
+                align-items: center;
+                gap: 12px;
+                width: auto;
             }
             .btn-switch-ver {
-                width: 100%;
+                width: auto;
                 justify-content: center;
                 box-sizing: border-box;
-                padding: 10px 16px;
+                padding: 10px 18px;
                 font-size: 12.5px;
             }
+        }
+
+        /* ──────────────── 수급자 선택 제어 패널 슬라이딩 드로어 디자인 (친절한 주석 추가) ──────────────── */
+        .control-panel {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.08), 0 1px 8px rgba(0, 0, 0, 0.02);
+            width: 330px;
+            box-sizing: border-box;
+            transform: translateX(calc(100% + 24px));
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: visible;
+        }
+
+        .control-panel.open {
+            transform: translateX(0);
+        }
+
+        /* 패널 헤더 스타일 */
+        .control-panel-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .control-panel-header h3 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e1e2f;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 플로팅 토글 핸들 탭 (드로어 좌측 가장자리에 결합) */
+        .control-panel-toggle {
+            position: absolute;
+            left: -36px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 96px;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: none;
+            border-radius: 16px 0 0 16px;
+            box-shadow: -5px 0 15px rgba(118, 75, 162, 0.25);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            padding: 0;
+            z-index: 10001;
+        }
+
+        .control-panel-toggle:hover {
+            width: 40px;
+            left: -40px;
+            background: linear-gradient(135deg, #8a5ec2 0%, #7d93ff 100%);
+            box-shadow: -8px 0 20px rgba(118, 75, 162, 0.35);
+        }
+
+        .control-panel-toggle .toggle-arrow {
+            display: inline-block;
+            font-size: 12px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(0deg);
+        }
+
+        .control-panel.open .control-panel-toggle .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* 수급자 위젯 내장 스타일 */
+        .recipient-widget {
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            padding-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .recipient-list-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            color: #1e1e2f;
+            font-weight: bold;
+            border-left: 3px solid #764ba2;
+            padding-left: 6px;
+        }
+
+        /* 수급자 성명 검색바 스타일 */
+        .search-box-wrap {
+            position: relative;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 30px 8px 12px;
+            font-size: 11px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            background: #fff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .search-input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 0 2px rgba(118, 75, 162, 0.12);
+        }
+
+        .btn-search-clear {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            display: none;
+            line-height: 1;
+        }
+
+        .btn-search-clear:hover {
+            color: #333;
+        }
+
+        /* 수급자 정보 관리 / 신규 등록 버튼 스타일 */
+        .btn-open-manage {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            padding: 12px 8px;
+            font-size: 12.5px;
+            font-weight: bold;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.15);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-open-manage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3);
+        }
+
+        .btn-open-manage:active {
+            transform: translateY(1px);
+        }
+
+        /* 수급자 목록 위젯 스크롤링 */
+        .recipient-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        /* 스크롤바 커스텀 */
+        .recipient-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .recipient-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+        }
+
+        /* 수급자 초압축 가로 한줄 테이블식 행 스타일 */
+        .recipient-row {
+            background: #ffffff;
+            border: 1px solid #eaeaea;
+            border-radius: 6px;
+            padding: 6px 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            gap: 8px;
+        }
+
+        .recipient-row:hover {
+            transform: translateY(-0.5px);
+            box-shadow: 0 4px 8px rgba(118, 75, 162, 0.06);
+            border-color: #764ba2;
+            background-color: #fcfbff;
+        }
+
+        .recipient-row:active {
+            transform: translateY(0);
+            background-color: #f3f0fa;
+        }
+
+        .row-info-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .row-name {
+            font-weight: bold;
+            color: #111;
+            font-size: 12.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 2px;
+        }
+
+        .row-grade {
+            font-size: 10px;
+            background: rgba(118, 75, 162, 0.08);
+            color: #764ba2;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .badge-dementia {
+            font-size: 10px;
+            background: rgba(147, 51, 234, 0.1);
+            color: #9333ea;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-align: center;
+            margin-right: 2px;
+            display: inline-block;
+        }
+
+        .row-sep {
+            font-size: 10px;
+            color: #ccc;
+            user-select: none;
+            font-weight: bold;
+            margin: 0 2px;
+        }
+
+        .row-birth {
+            font-size: 11px;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .row-cert {
+            font-size: 11px;
+            color: #444;
+            font-weight: bold;
+            font-family: Consolas, Monaco, monospace;
+            flex-shrink: 0;
+        }
+
+        /* 수급자 행 내 수정 버튼 스타일 */
+        .btn-row-edit {
+            background: none;
+            border: none;
+            font-size: 11px;
+            color: #aaa;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-row-edit:hover {
+            background-color: #f0ebf8;
+            color: #764ba2;
+            transform: scale(1.15);
+        }
+
+        .btn-row-edit:active {
+            transform: scale(0.9);
+        }
+
+        .no-recipients {
+            text-align: center;
+            padding: 20px 5px;
+            color: #999;
+            font-size: 10.5px;
+            line-height: 1.4;
+        }
+
+        .no-recipients-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+            display: block;
         }
     </style>
 </head>
@@ -64,11 +410,11 @@
 <body>
 
     <!-- 🔄 수기 기록지 전환용 플로팅 버튼 (인쇄 시 자동 숨김) -->
-    <div class="version-switch-floating" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+    <div class="version-switch-floating">
         <a href="../수기 급여제공기록지/[수기급여제공기록지].html" class="btn-switch-ver">
             📝 수기 급여제공기록지 화면으로 전환
         </a>
-        <button onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');" class="btn-switch-ver" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+        <button onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');" class="btn-switch-ver">
             📖 사용 설명서
         </button>
     </div>

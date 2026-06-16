@@ -1296,24 +1296,8 @@ document.addEventListener('DOMContentLoaded', function () {
         fileTimestamp = typeof INITIAL_RECIPIENTS_TIMESTAMP !== 'undefined' ? INITIAL_RECIPIENTS_TIMESTAMP : 0;
       }
 
-      let localList = [];
-      const saved = localStorage.getItem('rfid_recipients');
-      if (saved) {
-        localList = JSON.parse(saved);
-      }
-
-      // 병합: 로컬 저장 데이터와 고정 파일 데이터를 하나로 합침
-      const merged = [...initialList];
-      localList.forEach(localRec => {
-        const idx = merged.findIndex(m => m.id === localRec.id);
-        if (idx > -1) {
-          merged[idx] = localRec;
-        } else {
-          merged.push(localRec);
-        }
-      });
-
-      recipients = merged;
+      // 🌟 로컬 스토리지 병합 과정을 생략하고, 오직 스크립트 파일(INITIAL_RECIPIENTS) 또는 API 로드 기준 데이터만 가져오도록 고정합니다. (친절한 한글 주석)
+      recipients = initialList;
       localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
     } catch (e) {
       console.error('데이터 로드 중 오류 발생:', e);

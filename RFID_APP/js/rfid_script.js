@@ -841,36 +841,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 return r;
             };
 
-            // 🌟 일렉트론 환경이거나 파일 타임스탬프가 더 최신인 경우 덮어쓰기 로드
-            if ((window.api && window.api.loadRecipients) || (fileTimestamp > storedTimestamp && fileTimestamp > 0)) {
-                // 파일에 있는 수정버전이 로컬 저장소보다 최신인 경우: 파일 데이터로 전체 초기화하여 덮어씀 (삭제 내역 즉시 동기화)
-                recipients = initialList.map(ensureId);
-                localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
-                localStorage.setItem('rfid_recipients_timestamp', fileTimestamp);
-            } else {
-                // 그렇지 않은 경우: 기존 로컬 임시 수정 정보 병합 적용 (로컬 변경사항 보존)
-                let localList = [];
-                const saved = localStorage.getItem('rfid_recipients');
-                if (saved) {
-                    localList = JSON.parse(saved);
-                }
-
-                const merged = initialList.map(ensureId);
-                localList.map(ensureId).forEach(localRec => {
-                    const idx = merged.findIndex(m => m.id === localRec.id);
-                    if (idx > -1) {
-                        merged[idx] = localRec;
-                    } else {
-                        merged.push(localRec);
-                    }
-                });
-
-                recipients = merged;
-                localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
-                if (!localStorage.getItem('rfid_recipients_timestamp')) {
-                    localStorage.setItem('rfid_recipients_timestamp', storedTimestamp || Date.now());
-                }
-            }
+            // 🌟 로컬 스토리지 병합 과정을 생략하고, 오직 스크립트 파일(INITIAL_RECIPIENTS) 또는 API 로드 기준 데이터만 가져오도록 고정합니다. (친절한 한글 주석)
+            recipients = initialList.map(ensureId);
+            localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
+            localStorage.setItem('rfid_recipients_timestamp', fileTimestamp || Date.now());
         } catch (e) {
             console.error('데이터 로드 중 오류 발생:', e);
             recipients = typeof INITIAL_RECIPIENTS !== 'undefined' ? [...INITIAL_RECIPIENTS] : [];

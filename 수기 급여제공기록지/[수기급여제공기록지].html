@@ -7,11 +7,16 @@
   <title>장기요양급여 제공기록지(방문요양)</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
+    /* 🔄 버전 전환 플로팅 컨테이너 스타일 정의 (친절한 주석 추가) */
     .version-switch-floating {
       position: fixed;
       top: 24px;
       left: 24px;
       z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
     }
     .btn-switch-ver {
       background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
@@ -42,20 +47,29 @@
         display: none !important;
       }
     }
-    @media (max-width: 1200px) {
+    /* 📱 화면이 작아져 플로팅 버튼이 본문 영역을 침범하거나 가리기 시작할 때 (1650px 이하),
+       body 레이아웃을 세로(column) 정렬로 바꾸고 플로팅 버튼들을 상단에 가로(row) 형태로 나란히 배치해 가리지 않게 합니다. (친절한 한글 주석) */
+    @media (max-width: 1650px) {
+      body {
+        flex-direction: column;
+        align-items: center;
+        padding-top: 16px;
+      }
       .version-switch-floating {
         position: static;
-        margin-top: 15px;
-        margin-bottom: 5px;
+        margin: 0 auto 16px auto;
         display: flex;
+        flex-direction: row;
         justify-content: center;
-        width: 100%;
+        align-items: center;
+        gap: 12px;
+        width: auto;
       }
       .btn-switch-ver {
-        width: 100%;
+        width: auto;
         justify-content: center;
         box-sizing: border-box;
-        padding: 10px 16px;
+        padding: 10px 18px;
         font-size: 12.5px;
       }
     }
@@ -65,11 +79,11 @@
 <body>
 
   <!-- 🔄 RFID APP형 전환용 플로팅 버튼 (인쇄 시 자동 숨김) -->
-  <div class="version-switch-floating" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+  <div class="version-switch-floating">
     <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver">
       📱 RFID APP형 화면으로 전환
     </a>
-    <button onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');" class="btn-switch-ver" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+    <button onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');" class="btn-switch-ver">
       📖 사용 설명서
     </button>
   </div>
