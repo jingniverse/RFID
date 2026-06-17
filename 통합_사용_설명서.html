@@ -16,7 +16,7 @@
       --success: #2e7d32;
       --success-light: #edf7ed;
       --text-dark: #1e1e2f;
-      --text-muted: #64748b;
+      --text-muted: #222233;
       --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       --card-shadow: 0 4px 20px rgba(118, 75, 162, 0.04);
     }
@@ -329,13 +329,15 @@
     }
 
     .tip-callout {
-      background: #fafafc;
-      border: 1px solid #eef0f6;
-      border-radius: 8px;
-      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(118, 75, 162, 0.04) 0%, rgba(102, 126, 234, 0.04) 100%);
+      border: 1.5px solid rgba(118, 75, 162, 0.25);
+      border-left: 6px solid var(--primary);
+      border-radius: 12px;
+      padding: 18px 22px;
       display: flex;
-      gap: 8px;
+      gap: 14px;
       align-items: flex-start;
+      box-shadow: 0 6px 20px rgba(118, 75, 162, 0.05);
     }
 
     .tip-icon {
@@ -449,15 +451,18 @@
 
     <!-- 3. 하단 슬림 팁 바 -->
     <div class="tips-section">
-      <div class="tips-title">💡 알아두면 매우 편리한 핵심 꿀팁</div>
+      <div class="tips-title" style="font-size: 15px; border-left-width: 4px; margin-bottom: 10px;">📌 프로그램 상시 대기 및 신속 실행 가이드 (중요)</div>
       <div class="tips-grid">
 
         <!-- 꿀팁 1 -->
         <div class="tip-callout">
-          <span class="tip-icon">💻</span>
           <div class="tip-body">
-            <h4>종료하지 않고 트레이(우측 하단)에서 상시 대기</h4>
-            <p>인터넷 화면 창을 닫아도 프로그램은 완전히 종료되지 않고 <strong>화면 우측 하단 작업표시줄(숨겨진 아이콘 목록 ▲)</strong>에 상시 대기 상태로 유지됩니다. 매번 파일을 찾아 다시 실행할 필요 없이 언제든 즉시 열어 관리하실 수 있습니다.</p>
+            <h4 style="font-size: 16px; color: #764ba2; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.3px;">💡 더 이상 바탕화면의 아이콘을 매번 새로 실행할 필요가 없습니다!</h4>
+            <div style="font-size: 14.5px; color: #0f172a; line-height: 1.7; display: flex; flex-direction: column; gap: 6px; font-weight: 500;">
+              <p>• <strong>[창 닫기] 시</strong>: 창을 닫아도 프로그램은 완전히 꺼지지 않고, <strong style="color: #ef4444; font-weight: 800;">화면 우측 하단 작업표시줄(숨겨진 아이콘 목록 ▲)</strong>에 들어가 조용히 상시 대기합니다.</p>
+              <p>• <strong>[즉시 다시 열기]</strong>: 작업표시줄 트레이 영역의 <strong style="color: #1a73e8; font-weight: 800;">방문요양 스마트 통합 허브 아이콘</strong>을 클릭하시면, <strong style="color: #1a73e8; font-weight: 800;">1초 만에 바로 화면이 즉시 복귀</strong>합니다.</p>
+              <p>• <strong>[완전 종료]하려면</strong>: 대기 중인 트레이 아이콘을 마우스 <strong style="color: #475569; font-weight: 800;">우클릭</strong>하신 후 <strong style="color: #ef4444; font-weight: 800;">[종료]</strong>를 누르시면 완벽히 종료됩니다.</p>
+            </div>
           </div>
         </div>
 

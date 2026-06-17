@@ -1495,3 +1495,25 @@ label:has(input[type="checkbox"].custom-cb-input.weekly-checked:checked) {
         display: none !important;
     }
 }
+
+/* 📱 좁은 화면 대응을 위한 반응형 1열 레이아웃 개선 (친절한 학습용 한글 주석)
+   - 목적: 태블릿이나 작은 노트북 화면에서 3열 구조가 한눈에 보기 좁아질 때, 세로로 흐르듯 1열(한 줄)로 배치하여 모바일 앱 같은 편리한 사용자 환경을 제공합니다.
+   - 적용 범위: 인쇄(Print) 레이아웃에 영향을 주지 않도록 오직 화면 표시(Screen) 매체에만 한정하여 적용합니다.
+   - 임계점: 화면 너비가 1130px 이하가 될 때 레이아웃 변경이 적용됩니다. */
+@media screen and (max-width: 1130px) {
+    /* 기존 display: table 구조를 일반 블록 형태로 바꾸어 세로 배치가 가능하게 합니다. */
+    .container-table {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-spacing: 0 !important; /* 테이블 셀 간격 제거 */
+        padding: 0 4px !important;    /* 좌우 여백을 소량 부여해 카드가 화면 끝에 너무 붙지 않게 조절 */
+    }
+    
+    /* display: table-cell을 display: block으로 변환하고 가로 너비를 100%로 지정하여 1열로 떨어지게 만듭니다. */
+    .column-cell {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 20px !important; /* 각 열(카테고리 묶음) 사이에 시원한 공백을 줍니다. */
+    }
+}
