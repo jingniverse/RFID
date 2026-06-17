@@ -15,7 +15,7 @@
     "appId": "com.rfid.smarthomecare",
     "productName": "방문요양 급여기록지 스마트 통합 허브",
     "directories": {
-      "output": "../../RFID-build"
+      "output": "dist"
     },
     "win": {
       "target": [
