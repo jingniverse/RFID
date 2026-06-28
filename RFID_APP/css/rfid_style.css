@@ -1217,6 +1217,38 @@ label:has(input[type="checkbox"].custom-cb-input.weekly-checked:checked) {
     border-radius: 4px;
 }
 
+/* 월간서비스로 체크된 개별 항목에 대한 디자인 */
+input[type="checkbox"].custom-cb-input.monthly-checked:checked {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+}
+label:has(input[type="checkbox"].custom-cb-input.monthly-checked:checked) {
+    background-color: #f0fdf4 !important;
+    /* 연한 초록색 배경 */
+    border-radius: 4px;
+}
+
+/* 필요시서비스로 체크된 개별 항목에 대한 디자인 */
+input[type="checkbox"].custom-cb-input.as-needed-checked:checked {
+    background-color: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
+}
+label:has(input[type="checkbox"].custom-cb-input.as-needed-checked:checked) {
+    background-color: #f5f3ff !important;
+    /* 연한 보라색 배경 */
+    border-radius: 4px;
+}
+
+/* 라디오 행 월간/필요시 연동 디자인 */
+.radio-row.monthly-active {
+    background-color: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+}
+.radio-row.as-needed-active {
+    background-color: #f5f3ff !important;
+    border-color: #ddd6fe !important;
+}
+
 /* ──────────────── 수급자 선택 제어 패널 슬라이딩 드로어 디자인 (Premium Responsive Drawer) ──────────────── */
 .control-panel {
     position: fixed;

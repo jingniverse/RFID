@@ -803,6 +803,30 @@
         transform: translateY(0);
       }
     }
+
+    .chk-label-db.monthly-active,
+    .sub-chk-label-db.monthly-active,
+    .radio-row-db.monthly-active {
+      border-color: #bbf7d0 !important;
+      background-color: #f0fdf4 !important;
+      color: #15803d !important;
+    }
+    .chk-label-db input[type="checkbox"].monthly-checked,
+    .sub-chk-label-db input[type="checkbox"].monthly-checked {
+      accent-color: #15803d !important;
+    }
+
+    .chk-label-db.as-needed-active,
+    .sub-chk-label-db.as-needed-active,
+    .radio-row-db.as-needed-active {
+      border-color: #ddd6fe !important;
+      background-color: #f5f3ff !important;
+      color: #6d28d9 !important;
+    }
+    .chk-label-db input[type="checkbox"].as-needed-checked,
+    .sub-chk-label-db input[type="checkbox"].as-needed-checked {
+      accent-color: #6d28d9 !important;
+    }
   </style>
 </head>
 
@@ -946,9 +970,17 @@
           <!-- 제공서비스 및 변화상태 가로형 와이드 데크 배치 (박스 없음) -->
           <div class="template-section-title">
             <span>☑️ 제공서비스 체크 항목 및 변화상태</span>
-            <label>
-              <input type="checkbox" id="temp-weeklyServiceCb"> 주/월/필요시
-            </label>
+            <div style="display: flex; gap: 12px; align-items: center; font-size: 13px;">
+              <label style="color: #ef4444; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin: 0;">
+                <input type="checkbox" id="temp-weeklyServiceCb" style="accent-color: #ef4444; width: 14px; height: 14px;"> 📅 주간
+              </label>
+              <label style="color: #15803d; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin: 0;">
+                <input type="checkbox" id="temp-monthlyServiceCb" style="accent-color: #15803d; width: 14px; height: 14px;"> 📅 월간
+              </label>
+              <label style="color: #6d28d9; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin: 0;">
+                <input type="checkbox" id="temp-asNeededServiceCb" style="accent-color: #6d28d9; width: 14px; height: 14px;"> 📅 필요시
+              </label>
+            </div>
           </div>
           <div class="grid-col-8-db" style="margin-bottom: 10px;">
             <label class="chk-label-db">
@@ -1267,7 +1299,20 @@
 
         filtered.forEach(r => {
           const tr = document.createElement('tr');
-          const hasTemplate = r.template ? '<span class="badge-template">등록됨</span>' : '<span class="badge-no-template">비어있음</span>';
+          // 비정기 서비스 대상 배지 추출
+          let periodicBadges = '';
+          if (r.template) {
+            if (r.template.weeklyCheckboxes?.some(c => c === true) || r.template.weeklySubCheckboxes?.some(c => c === true)) {
+              periodicBadges += '<span style="font-size: 9.5px; background: #ffebee; color: #ef4444; border: 1px solid #fecdd3; padding: 2px 5px; border-radius: 5px; margin-left: 3px; font-weight: bold; white-space: nowrap;">주간</span>';
+            }
+            if (r.template.monthlyCheckboxes?.some(c => c === true) || r.template.monthlySubCheckboxes?.some(c => c === true)) {
+              periodicBadges += '<span style="font-size: 9.5px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 2px 5px; border-radius: 5px; margin-left: 3px; font-weight: bold; white-space: nowrap;">월간</span>';
+            }
+            if (r.template.asNeededCheckboxes?.some(c => c === true) || r.template.asNeededSubCheckboxes?.some(c => c === true)) {
+              periodicBadges += '<span style="font-size: 9.5px; background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 2px 5px; border-radius: 5px; margin-left: 3px; font-weight: bold; white-space: nowrap;">필요시</span>';
+            }
+          }
+          const hasTemplate = r.template ? `<span class="badge-template">등록됨</span>${periodicBadges}` : '<span class="badge-no-template">비어있음</span>';
           const dementiaBadge = r.isDementia ? '<span class="badge-dementia">치매</span>' : '';
           const genderBadge = `<span style="font-size: 11px; color: ${r.gender === '남' ? '#2563eb' : '#db2777'}; font-weight: bold; margin-left: 4px;">(${r.gender || '여'})</span>`;
 
@@ -1758,6 +1803,21 @@
 
       // 주/월/필요시 체크 연동 기능 초기화 및 리스너 등록
       const adminWeeklyCb = document.getElementById('temp-weeklyServiceCb');
+      const adminMonthlyCb = document.getElementById('temp-monthlyServiceCb');
+      const adminAsNeededCb = document.getElementById('temp-asNeededServiceCb');
+
+      // 세 개의 모드 스위치는 상호 배타적 선택(하나 선택 시 다른 것 해제) - 라디오 기능
+      [adminWeeklyCb, adminMonthlyCb, adminAsNeededCb].forEach(cb => {
+        if (cb) {
+          cb.addEventListener('change', function() {
+            if (this.checked) {
+              [adminWeeklyCb, adminMonthlyCb, adminAsNeededCb].forEach(other => {
+                if (other && other !== this) other.checked = false;
+              });
+            }
+          });
+        }
+      });
 
       function updateParentWeeklyStatus(parentEl, childIds) {
         if (!parentEl) return;
@@ -1767,19 +1827,24 @@
 
         const label = parentEl.closest('.chk-label-db');
 
+        // 모든 상태 초기화
+        parentEl.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+        if (label) label.classList.remove('weekly-active', 'monthly-active', 'as-needed-active');
+
         if (checkedChildren.length > 0) {
           const allWeekly = checkedChildren.every(cb => cb.classList.contains('weekly-checked'));
+          const allMonthly = checkedChildren.every(cb => cb.classList.contains('monthly-checked'));
+          const allAsNeeded = checkedChildren.every(cb => cb.classList.contains('as-needed-checked'));
+
           if (allWeekly) {
             parentEl.classList.add('weekly-checked');
             if (label) label.classList.add('weekly-active');
-          } else {
-            parentEl.classList.remove('weekly-checked');
-            if (label) label.classList.remove('weekly-active');
-          }
-        } else {
-          if (!parentEl.checked) {
-            parentEl.classList.remove('weekly-checked');
-            if (label) label.classList.remove('weekly-active');
+          } else if (allMonthly) {
+            parentEl.classList.add('monthly-checked');
+            if (label) label.classList.add('monthly-active');
+          } else if (allAsNeeded) {
+            parentEl.classList.add('as-needed-checked');
+            if (label) label.classList.add('as-needed-active');
           }
         }
       }
@@ -1793,20 +1858,25 @@
       // 1. 체크박스 클릭 이벤트 리스너 등록
       document.querySelectorAll('input[id^="temp-chk-"], input[id^="temp-sub-chk-"]').forEach(cb => {
         cb.addEventListener('change', function () {
-          if (this.id === 'temp-weeklyServiceCb') return;
+          if (this.id === 'temp-weeklyServiceCb' || this.id === 'temp-monthlyServiceCb' || this.id === 'temp-asNeededServiceCb') return;
           
           const label = this.closest('.chk-label-db, .sub-chk-label-db');
+          
+          // 모든 비정기 상태 초기화
+          this.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+          if (label) label.classList.remove('weekly-active', 'monthly-active', 'as-needed-active');
+
           if (this.checked) {
             if (adminWeeklyCb && adminWeeklyCb.checked) {
               this.classList.add('weekly-checked');
               if (label) label.classList.add('weekly-active');
-            } else {
-              this.classList.remove('weekly-checked');
-              if (label) label.classList.remove('weekly-active');
+            } else if (adminMonthlyCb && adminMonthlyCb.checked) {
+              this.classList.add('monthly-checked');
+              if (label) label.classList.add('monthly-active');
+            } else if (adminAsNeededCb && adminAsNeededCb.checked) {
+              this.classList.add('as-needed-checked');
+              if (label) label.classList.add('as-needed-active');
             }
-          } else {
-            this.classList.remove('weekly-checked');
-            if (label) label.classList.remove('weekly-active');
           }
 
           // 하위 항목 변경 시 대분류 주간 상태 자동 갱신

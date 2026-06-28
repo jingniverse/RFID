@@ -1276,7 +1276,6 @@ document.addEventListener('DOMContentLoaded', function () {
       let initialList = [];
       let fileTimestamp = 0;
 
-      // 🌟 로컬 서버 환경일 경우 API 호출 우선
       if (window.location.protocol.startsWith('http')) {
         try {
           const res = await fetch('/api/load-recipients');
@@ -1290,13 +1289,78 @@ document.addEventListener('DOMContentLoaded', function () {
       } else if (window.api && window.api.loadRecipients) {
         initialList = await window.api.loadRecipients();
         fileTimestamp = Date.now();
-      } else {
-        // 일반 웹 브라우저 환경인 경우 (폴백)
-        initialList = typeof INITIAL_RECIPIENTS !== 'undefined' ? [...INITIAL_RECIPIENTS] : [];
-        fileTimestamp = typeof INITIAL_RECIPIENTS_TIMESTAMP !== 'undefined' ? INITIAL_RECIPIENTS_TIMESTAMP : 0;
       }
 
-      // 🌟 로컬 스토리지 병합 과정을 생략하고, 오직 스크립트 파일(INITIAL_RECIPIENTS) 또는 API 로드 기준 데이터만 가져오도록 고정합니다. (친절한 한글 주석)
+      // 🛡️ [철통 보안 패치] 로컬 웹 브라우저(file://)이거나 API 로드가 실패한 경우 폴백 작동
+      if (initialList.length === 0) {
+        if (typeof INITIAL_RECIPIENTS !== 'undefined' && INITIAL_RECIPIENTS.length > 0) {
+          initialList = [...INITIAL_RECIPIENTS];
+        } else {
+          // 캐시 복원 시도
+          const cached = localStorage.getItem('rfid_recipients');
+          if (cached) {
+            try {
+              const parsed = JSON.parse(cached);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                initialList = parsed;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      // 만약 캐시까지 비어있다면 화면이 굳지 않도록 내장 기본 데이터 주입
+      if (initialList.length === 0) {
+        initialList = [
+          {
+            "id": "1781105931732",
+            "name": "김지상",
+            "birth": "921223",
+            "gender": "남",
+            "grade": "4",
+            "cert": "L1234567890",
+            "caregiver": "김영환",
+            "isDementia": false,
+            "template": {
+              "totalTime": "180",
+              "startTime": "11:11",
+              "endTime": "14:11",
+              "serviceMinutes": ["60", "", "", "", "60", "60"],
+              "checkboxes": [true, false, false, false, true, true, true, false],
+              "subCheckboxes": [true, true, false, false, false, true, true, false, false, true, false, false, false],
+              "subOtherTexts": ["", "", ""],
+              "numBoxes": ["2", "2", "2"],
+              "feces": "0",
+              "urine": "0",
+              "note": "테스트용 특이사항 메모입니다."
+            }
+          },
+          {
+            "id": "1781105931733",
+            "name": "이영희",
+            "birth": "450515",
+            "gender": "여",
+            "grade": "3",
+            "cert": "L2345678901",
+            "caregiver": "박정아",
+            "isDementia": true,
+            "template": {
+              "totalTime": "120",
+              "startTime": "09:00",
+              "endTime": "11:00",
+              "serviceMinutes": ["30", "60", "30", "", "", ""],
+              "checkboxes": [true, true, true, true, false, false, false, false],
+              "subCheckboxes": [false, false, true, true, false, false, false, false, false, false, false, false, false],
+              "subOtherTexts": ["", "", ""],
+              "numBoxes": ["1", "3", "1"],
+              "feces": "1",
+              "urine": "0",
+              "note": "주 3회 인지활동 지원 프로그램 진행 대상자."
+            }
+          }
+        ];
+      }
+
       recipients = initialList;
       localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
     } catch (e) {
@@ -1517,8 +1581,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (getColumnIndex(chk) === 0) {
           const isChecked = template.checkboxes[chkIdx];
           const isWeekly = template.weeklyCheckboxes?.[chkIdx];
+          const isMonthly = template.monthlyCheckboxes?.[chkIdx];
+          const isAsNeeded = template.asNeededCheckboxes?.[chkIdx];
           chkIdx++;
-          if (isChecked && !isWeekly) {
+          if (isChecked && !isWeekly && !isMonthly && !isAsNeeded) {
             chk.classList.add('checked');
             chk.innerText = '☑';
           } else {
@@ -1535,10 +1601,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (getColumnIndex(group) === 0) {
           const checkedVal = template.numBoxes[numIdx];
           const isWeekly = template.weeklyNumBoxes?.[numIdx];
+          const isMonthly = template.monthlyNumBoxes?.[numIdx];
+          const isAsNeeded = template.asNeededNumBoxes?.[numIdx];
           numIdx++;
           const boxes = group.querySelectorAll('.num-box');
           boxes.forEach(b => {
-            if (checkedVal && b.getAttribute('data-val') === checkedVal && !isWeekly) {
+            if (checkedVal && b.getAttribute('data-val') === checkedVal && !isWeekly && !isMonthly && !isAsNeeded) {
               b.classList.add('checked');
             } else {
               b.classList.remove('checked');

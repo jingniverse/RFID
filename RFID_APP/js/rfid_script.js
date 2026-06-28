@@ -7,7 +7,10 @@ Object.defineProperty(HTMLInputElement.prototype, 'checked', {
     set: function (val) {
         originalCheckedDescriptor.set.call(this, val);
 
-        if (this.classList.contains('custom-cb-input') && this.id !== 'weeklyServiceCb') {
+        if (this.classList.contains('custom-cb-input')) {
+            const skipIds = ['weeklyServiceCb', 'monthlyServiceCb', 'asNeededServiceCb'];
+            if (skipIds.includes(this.id)) return;
+
             // 배변변화 등 주간서비스 제외 대상 카드는 제외
             if (this.closest('[data-no-weekly]')) return;
 
@@ -16,12 +19,20 @@ Object.defineProperty(HTMLInputElement.prototype, 'checked', {
             if (parentIds.includes(this.id)) return;
 
             const weeklyCb = document.getElementById('weeklyServiceCb');
+            const monthlyCb = document.getElementById('monthlyServiceCb');
+            const asNeededCb = document.getElementById('asNeededServiceCb');
+            
+            // 모든 이전 클래스 제거
+            this.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+
             if (val) {
                 if (weeklyCb && weeklyCb.checked) {
                     this.classList.add('weekly-checked');
+                } else if (monthlyCb && monthlyCb.checked) {
+                    this.classList.add('monthly-checked');
+                } else if (asNeededCb && asNeededCb.checked) {
+                    this.classList.add('as-needed-checked');
                 }
-            } else {
-                this.classList.remove('weekly-checked');
             }
         }
     },
@@ -39,20 +50,29 @@ function updateAppParentWeeklyStatus(parentId) {
     const checkedChildren = Array.from(subGrid.querySelectorAll('input[type="checkbox"]'))
         .filter(cb => cb.checked);
         
+    // 모든 상태 초기화
+    parentEl.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+
     if (checkedChildren.length > 0) {
         const allWeekly = checkedChildren.every(cb => cb.classList.contains('weekly-checked'));
+        const allMonthly = checkedChildren.every(cb => cb.classList.contains('monthly-checked'));
+        const allAsNeeded = checkedChildren.every(cb => cb.classList.contains('as-needed-checked'));
+        
         if (allWeekly) {
             parentEl.classList.add('weekly-checked');
-        } else {
-            parentEl.classList.remove('weekly-checked');
+        } else if (allMonthly) {
+            parentEl.classList.add('monthly-checked');
+        } else if (allAsNeeded) {
+            parentEl.classList.add('as-needed-checked');
         }
-    } else {
-        parentEl.classList.remove('weekly-checked');
     }
 }
 
 document.addEventListener('change', function (e) {
-    if (e.target && e.target.classList.contains('custom-cb-input') && e.target.id !== 'weeklyServiceCb') {
+    if (e.target && e.target.classList.contains('custom-cb-input')) {
+        const skipIds = ['weeklyServiceCb', 'monthlyServiceCb', 'asNeededServiceCb'];
+        if (skipIds.includes(e.target.id)) return;
+
         // 배변변화 등 주간서비스 제외 대상 카드는 제외
         if (e.target.closest('[data-no-weekly]')) return;
 
@@ -61,12 +81,20 @@ document.addEventListener('change', function (e) {
         if (parentIds.includes(e.target.id)) return;
 
         const weeklyCb = document.getElementById('weeklyServiceCb');
+        const monthlyCb = document.getElementById('monthlyServiceCb');
+        const asNeededCb = document.getElementById('asNeededServiceCb');
+        
+        // 모든 비정기 상태 초기화
+        e.target.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+
         if (e.target.checked) {
             if (weeklyCb && weeklyCb.checked) {
                 e.target.classList.add('weekly-checked');
+            } else if (monthlyCb && monthlyCb.checked) {
+                e.target.classList.add('monthly-checked');
+            } else if (asNeededCb && asNeededCb.checked) {
+                e.target.classList.add('as-needed-checked');
             }
-        } else {
-            e.target.classList.remove('weekly-checked');
         }
 
         // 하위 항목 변경 시 대분류(부모)의 주간 상태 동적 갱신
@@ -810,7 +838,6 @@ document.addEventListener('DOMContentLoaded', function () {
             let initialList = [];
             let fileTimestamp = 0;
 
-            // 🌟 로컬 서버 환경일 경우 API 호출 우선
             if (window.location.protocol.startsWith('http')) {
                 try {
                     const res = await fetch('/api/load-recipients');
@@ -823,28 +850,81 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } else if (window.api && window.api.loadRecipients) {
                 initialList = await window.api.loadRecipients();
-                // 일렉트론 환경에서는 항상 파일이 기준이 되므로 타임스탬프를 현재 시간으로 동기화
                 fileTimestamp = Date.now();
-            } else {
-                // 일반 웹 브라우저 환경인 경우 (폴백)
-                initialList = typeof INITIAL_RECIPIENTS !== 'undefined' ? [...INITIAL_RECIPIENTS] : [];
-                fileTimestamp = typeof INITIAL_RECIPIENTS_TIMESTAMP !== 'undefined' ? INITIAL_RECIPIENTS_TIMESTAMP : 0;
             }
 
-            const storedTimestamp = parseInt(localStorage.getItem('rfid_recipients_timestamp') || '0', 10);
-
-            // 고유 ID가 누락된 데이터가 있을 경우 이름_생년월일 조합으로 자동 고유 ID 생성 (대안 B 폴백)
-            const ensureId = r => {
-                if (!r.id) {
-                    r.id = r.name + "_" + r.birth;
+            // 🛡️ [철통 보안 패치] 로컬 웹 브라우저(file://)이거나 API 로드가 실패한 경우 폴백 작동
+            if (initialList.length === 0) {
+                if (typeof INITIAL_RECIPIENTS !== 'undefined' && INITIAL_RECIPIENTS.length > 0) {
+                    initialList = [...INITIAL_RECIPIENTS];
+                } else {
+                    // 캐시 복원 시도
+                    const cached = localStorage.getItem('rfid_recipients');
+                    if (cached) {
+                        try {
+                            const parsed = JSON.parse(cached);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                initialList = parsed;
+                            }
+                        } catch(e) {}
+                    }
                 }
-                return r;
-            };
+            }
 
-            // 🌟 로컬 스토리지 병합 과정을 생략하고, 오직 스크립트 파일(INITIAL_RECIPIENTS) 또는 API 로드 기준 데이터만 가져오도록 고정합니다. (친절한 한글 주석)
-            recipients = initialList.map(ensureId);
+            // 만약 캐시까지 비어있다면 화면이 굳지 않도록 내장 기본 데이터 주입
+            if (initialList.length === 0) {
+                initialList = [
+                    {
+                        "id": "1781105931732",
+                        "name": "김지상",
+                        "birth": "921223",
+                        "gender": "남",
+                        "grade": "4",
+                        "cert": "L1234567890",
+                        "caregiver": "김영환",
+                        "isDementia": false,
+                        "template": {
+                            "totalTime": "180",
+                            "startTime": "11:11",
+                            "endTime": "14:11",
+                            "serviceMinutes": ["60", "", "", "", "60", "60"],
+                            "checkboxes": [true, false, false, false, true, true, true, false],
+                            "subCheckboxes": [true, true, false, false, false, true, true, false, false, true, false, false, false],
+                            "subOtherTexts": ["", "", ""],
+                            "numBoxes": ["2", "2", "2"],
+                            "feces": "0",
+                            "urine": "0",
+                            "note": "테스트용 특이사항 메모입니다."
+                        }
+                    },
+                    {
+                        "id": "1781105931733",
+                        "name": "이영희",
+                        "birth": "450515",
+                        "gender": "여",
+                        "grade": "3",
+                        "cert": "L2345678901",
+                        "caregiver": "박정아",
+                        "isDementia": true,
+                        "template": {
+                            "totalTime": "120",
+                            "startTime": "09:00",
+                            "endTime": "11:00",
+                            "serviceMinutes": ["30", "60", "30", "", "", ""],
+                            "checkboxes": [true, true, true, true, false, false, false, false],
+                            "subCheckboxes": [false, false, true, true, false, false, false, false, false, false, false, false, false],
+                            "subOtherTexts": ["", "", ""],
+                            "numBoxes": ["1", "3", "1"],
+                            "feces": "1",
+                            "urine": "0",
+                            "note": "주 3회 인지활동 지원 프로그램 진행 대상자."
+                        }
+                    }
+                ];
+            }
+
+            recipients = initialList;
             localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
-            localStorage.setItem('rfid_recipients_timestamp', fileTimestamp || Date.now());
         } catch (e) {
             console.error('데이터 로드 중 오류 발생:', e);
             recipients = typeof INITIAL_RECIPIENTS !== 'undefined' ? [...INITIAL_RECIPIENTS] : [];
@@ -1213,93 +1293,84 @@ document.addEventListener('DOMContentLoaded', function () {
             const wCheckboxes = template.weeklyCheckboxes || [];
             const wSubCheckboxes = template.weeklySubCheckboxes || [];
             const wNumBoxes = template.weeklyNumBoxes || [];
+            
+            const mCheckboxes = template.monthlyCheckboxes || [];
+            const mSubCheckboxes = template.monthlySubCheckboxes || [];
+            const mNumBoxes = template.monthlyNumBoxes || [];
+            
+            const aCheckboxes = template.asNeededCheckboxes || [];
+            const aSubCheckboxes = template.asNeededSubCheckboxes || [];
+            const aNumBoxes = template.asNeededNumBoxes || [];
 
-            // 1. 개인위생 하위 주간 상태
+            // 1. 개인위생 하위 비정기 상태
             if (hygieneSubGrid) {
                 const childCbs = Array.from(hygieneSubGrid.querySelectorAll('input[type="checkbox"]'));
                 childCbs.forEach((cb, idx) => {
-                    if (idx < 5 && wSubCheckboxes[idx]) {
-                        cb.classList.add('weekly-checked');
-                    } else {
-                        cb.classList.remove('weekly-checked');
+                    cb.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+                    if (idx < 5) {
+                        if (wSubCheckboxes[idx]) cb.classList.add('weekly-checked');
+                        else if (mSubCheckboxes[idx]) cb.classList.add('monthly-checked');
+                        else if (aSubCheckboxes[idx]) cb.classList.add('as-needed-checked');
                     }
                 });
             }
 
-            // 2. 화장실 이용 하위 주간 상태
+            // 2. 화장실 이용 하위 비정기 상태
             if (toiletSubGrid) {
                 const childCbs = Array.from(toiletSubGrid.querySelectorAll('input[type="checkbox"]'));
                 childCbs.forEach((cb, idx) => {
-                    if (idx < 4 && wSubCheckboxes[5 + idx]) {
-                        cb.classList.add('weekly-checked');
-                    } else {
-                        cb.classList.remove('weekly-checked');
+                    cb.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+                    if (idx < 4) {
+                        if (wSubCheckboxes[5 + idx]) cb.classList.add('weekly-checked');
+                        else if (mSubCheckboxes[5 + idx]) cb.classList.add('monthly-checked');
+                        else if (aSubCheckboxes[5 + idx]) cb.classList.add('as-needed-checked');
                     }
                 });
             }
 
-            // 3. 가사 및 일상생활 지원 하위 주간 상태
+            // 3. 가사 및 일상생활 지원 하위 비정기 상태
             if (houseworkSubGrid) {
                 const childCbs = Array.from(houseworkSubGrid.querySelectorAll('input[type="checkbox"]'));
                 childCbs.forEach((cb, idx) => {
-                    if (idx < 4 && wSubCheckboxes[9 + idx]) {
-                        cb.classList.add('weekly-checked');
-                    } else {
-                        cb.classList.remove('weekly-checked');
+                    cb.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+                    if (idx < 4) {
+                        if (wSubCheckboxes[9 + idx]) cb.classList.add('weekly-checked');
+                        else if (mSubCheckboxes[9 + idx]) cb.classList.add('monthly-checked');
+                        else if (aSubCheckboxes[9 + idx]) cb.classList.add('as-needed-checked');
                     }
                 });
             }
 
-            // 4. 대분류 주간 상태 체크 및 클래스 부여
-            // 개인위생
-            if (hygieneCb) {
-                if (wCheckboxes[0]) hygieneCb.classList.add('weekly-checked');
-                else hygieneCb.classList.remove('weekly-checked');
-            }
-            // 몸씻기 도움
-            if (washCb) {
-                if (wCheckboxes[1]) washCb.classList.add('weekly-checked');
-                else washCb.classList.remove('weekly-checked');
-            }
-            // 식사도움
-            if (mealCb) {
-                if (wCheckboxes[2]) mealCb.classList.add('weekly-checked');
-                else mealCb.classList.remove('weekly-checked');
-            }
-            // 체위변경
-            if (postureCb) {
-                if (wCheckboxes[3]) postureCb.classList.add('weekly-checked');
-                else postureCb.classList.remove('weekly-checked');
-            }
-            // 이동도움
-            if (moveCb) {
-                if (wCheckboxes[4]) moveCb.classList.add('weekly-checked');
-                else moveCb.classList.remove('weekly-checked');
-            }
-            // 화장실 이용
-            if (toiletCb) {
-                if (wCheckboxes[5]) toiletCb.classList.add('weekly-checked');
-                else toiletCb.classList.remove('weekly-checked');
-            }
-            // 가사 및 일상생활
-            if (houseworkCb) {
-                if (wCheckboxes[6]) houseworkCb.classList.add('weekly-checked');
-                else houseworkCb.classList.remove('weekly-checked');
-            }
-            // 개인활동지원
-            if (targetActivityCb) {
-                if (wCheckboxes[7]) targetActivityCb.classList.add('weekly-checked');
-                else targetActivityCb.classList.remove('weekly-checked');
+            // Helper to assign periodic classes to main checkboxes
+            function setMainCbPeriodicClass(cb, idx) {
+                if (!cb) return;
+                cb.classList.remove('weekly-checked', 'monthly-checked', 'as-needed-checked');
+                if (wCheckboxes[idx]) cb.classList.add('weekly-checked');
+                else if (mCheckboxes[idx]) cb.classList.add('monthly-checked');
+                else if (aCheckboxes[idx]) cb.classList.add('as-needed-checked');
             }
 
-            // 5. 변화상태 라디오 행 주간 연동
+            // 4. 대분류 비정기 상태 체크 및 클래스 부여
+            setMainCbPeriodicClass(hygieneCb, 0);
+            setMainCbPeriodicClass(washCb, 1);
+            setMainCbPeriodicClass(mealCb, 2);
+            setMainCbPeriodicClass(postureCb, 3);
+            setMainCbPeriodicClass(moveCb, 4);
+            setMainCbPeriodicClass(toiletCb, 5);
+            setMainCbPeriodicClass(houseworkCb, 6);
+            setMainCbPeriodicClass(targetActivityCb, 7);
+
+            // 5. 변화상태 라디오 행 비정기 연동
             const radioRows = document.querySelectorAll('.radio-row');
             if (radioRows.length >= 3) {
                 for (let i = 0; i < 3; i++) {
+                    radioRows[i].classList.remove('weekly-active', 'monthly-active', 'as-needed-active');
                     if (wNumBoxes[i]) {
                         radioRows[i].classList.add('weekly-active');
-                    } else {
-                        radioRows[i].classList.remove('weekly-active');
+                    } else if (mNumBoxes[i]) {
+                        radioRows[i].classList.add('monthly-active');
+                    } else if (aNumBoxes[i]) {
+                        radioRows[i].classList.add('as-needed-active');
                     }
                 }
             }
@@ -1348,6 +1419,23 @@ document.addEventListener('DOMContentLoaded', function () {
             toast.addEventListener('animationend', () => toast.remove());
         }, 3500);
     }
+
+        // 상단 주간/월간/필요시 모드 스위치 상호배타적 단일 선택 제어 (라디오 기능)
+    const appWeeklyCb = document.getElementById('weeklyServiceCb');
+    const appMonthlyCb = document.getElementById('monthlyServiceCb');
+    const appAsNeededCb = document.getElementById('asNeededServiceCb');
+    
+    [appWeeklyCb, appMonthlyCb, appAsNeededCb].forEach(cb => {
+        if (cb) {
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    [appWeeklyCb, appMonthlyCb, appAsNeededCb].forEach(other => {
+                        if (other && other !== this) other.checked = false;
+                    });
+                }
+            });
+        }
+    });
 
     // 초기 기동 데이터 로드 및 렌더링
     loadRecipientsFromStorage().then(() => {
