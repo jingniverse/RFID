@@ -392,7 +392,133 @@
         grid-template-columns: 1fr;
       }
     }
+  
+    /* 📅 업데이트 내역 (릴리즈 노트) 아코디언 스타일 */
+    .release-section {
+      background: #fafafc;
+      border-top: 1px solid #f0f0f5;
+      padding: 14px 20px;
+      flex-shrink: 0;
+    }
+
+    .release-details {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+    }
+
+    .release-summary {
+      padding: 14px 18px;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #3b1b5c;
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s ease;
+    }
+
+    .release-summary:hover {
+      background: var(--primary-light);
+    }
+
+    /* 브라우저 기본 화살표 숨김 */
+    .release-summary::-webkit-details-marker {
+      display: none;
+    }
+    .release-summary::after {
+      content: "▼";
+      font-size: 11px;
+      color: var(--primary);
+      transition: transform 0.2s ease;
+    }
+    .release-details[open] .release-summary::after {
+      transform: rotate(180deg);
+    }
+
+    .release-content {
+      padding: 16px 18px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: #fafafc;
+    }
+
+    .version-block {
+      border-bottom: 1px dashed #e2e8f0;
+      padding-bottom: 12px;
+    }
+    .version-block:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .version-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .version-tag {
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .version-date {
+      font-size: 12.5px;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .version-list {
+      list-style: none;
+      padding-left: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .version-list li {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.5;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .version-list li::before {
+      content: "•";
+      position: absolute;
+      left: 2px;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .badge-type {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 4px;
+      margin-right: 4px;
+      display: inline-block;
+    }
+    .badge-type.feat { background: rgba(46, 125, 50, 0.1); color: #2e7d32; }
+    .badge-type.fix { background: rgba(229, 57, 53, 0.1); color: #e53935; }
+    .badge-type.design { background: rgba(118, 75, 162, 0.1); color: #764ba2; }
+    .badge-type.etc { background: rgba(71, 85, 105, 0.1); color: #475569; }
   </style>
+
 </head>
 <body>
   <div class="main-wrapper">
@@ -469,7 +595,57 @@
       </div>
     </div>
 
+
+    <!-- 📅 업데이트 내역 (릴리즈 노트) 아코디언 추가 -->
+    <div class="release-section">
+      <details class="release-details" open>
+        <summary class="release-summary">📅 프로그램 업데이트 및 개선 내역 (버전 히스토리)</summary>
+        <div class="release-content">
+          
+          <!-- v1.3.2 -->
+          <div class="version-block">
+            <div class="version-header">
+              <span class="version-tag">v1.3.2</span>
+              <span class="version-date">최신 버전</span>
+            </div>
+            <ul class="version-list">
+              <li><span class="badge-type design">디자인</span> <strong>모바일 웹 반응형 레이아웃 탑재</strong>: 화면 가로 폭이 1130px 이하로 좁아지거나 작은 노트북으로 실행 시, 스마트폰 화면처럼 세로 1열로 자동 정렬되어 글자가 깨지지 않고 시원하게 보입니다.</li>
+              <li><span class="badge-type design">디자인</span> <strong>가이드 시인성 보완</strong>: 하단 프로그램 상시 대기 가이드의 글씨 크기를 대폭 키우고 핵심 조작부(작업표시줄 대기, 즉시 복귀 등)에 확실한 칼라 강조 효과를 주었습니다.</li>
+              <li><span class="badge-type fix">버그수정</span> <strong>임시 빌드 찌꺼기 해결</strong>: 빌드 컴파일 시 특정 편집기나 시스템 백신과의 락(Lock) 충돌을 최소화하도록 포터블 패키징 파이프라인을 보완했습니다.</li>
+            </ul>
+          </div>
+
+          <!-- v1.3.1 -->
+          <div class="version-block">
+            <div class="version-header">
+              <span class="version-tag">v1.3.1</span>
+              <span class="version-date">이전 패치</span>
+            </div>
+            <ul class="version-list">
+              <li><span class="badge-type feat">새기능</span> <strong>원클릭 자가 업데이트 연동</strong>: 대시보드 상단 업데이트 알림 배너를 누르면 복잡한 사이트를 거치지 않고 최신 실행파일(EXE)이 즉시 원클릭으로 직접 다운로드됩니다.</li>
+              <li><span class="badge-type etc">기타</span> <strong>배포 파일명 명확화</strong>: 빌드 산출물의 파일명이 알아보기 쉽게 <code>RFID_v[버전].exe</code> 형식으로 자동 생성되도록 개선했습니다.</li>
+            </ul>
+          </div>
+
+          <!-- v1.3.0 -->
+          <div class="version-block">
+            <div class="version-header">
+              <span class="version-tag">v1.3.0</span>
+              <span class="version-date">메이저 업데이트</span>
+            </div>
+            <ul class="version-list">
+              <li><span class="badge-type feat">새기능</span> <strong>원터치 일정 자동완성</strong>: 수급자 성명을 마우스로 <strong>더블클릭</strong>하면 등록해 둔 하루 표준 일정이 1초 만에 자동으로 빈칸 없이 기입되는 지능형 스크립트를 최초 탑재했습니다.</li>
+              <li><span class="badge-type design">디자인</span> <strong>고해상도 통합 브랜딩 적용</strong>: 신규 스마트 통합 허브 전용 앱 아이콘 및 트레이 아이콘을 고화질로 디자인하여 적용했습니다.</li>
+              <li><span class="badge-type etc">기타</span> <strong>통합 사용 설명서 신설</strong>: 대시보드에서 직접 열 수 있는 친절한 마크업 형식의 웹 설명서 화면을 설계하여 최초 탑재했습니다.</li>
+            </ul>
+          </div>
+
+        </div>
+      </details>
+    </div>
+
   </div> <!-- manual-container 닫기 -->
+
 </div> <!-- main-wrapper 닫기 -->
 
 <script>
