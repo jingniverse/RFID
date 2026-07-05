@@ -983,7 +983,7 @@ document.addEventListener('DOMContentLoaded', function () {
             row.className = 'recipient-row';
             row.title = '💡 더블클릭하면 이 수급자의 하루 표준 일정을 즉시 적용합니다.';
 
-            const dementiaBadge = r.isDementia ? '<span class="badge-dementia">치매</span>' : '';
+            const familyCareBadge = (r.template && r.template.familyCare) ? `<span class="badge-dementia">가족</span>` : '';
             const genderBadge = `<span style="font-size: 11px; color: ${r.gender === '남' ? '#3b82f6' : '#ec4899'}; font-weight: bold; margin-left: 4px;">(${r.gender || '여'})</span>`;
 
             row.innerHTML = `
@@ -993,7 +993,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <span class="row-sep">·</span>
                     <span class="row-birth">${escapeHtml(r.birth)}</span>
                 </div>
-                ${dementiaBadge}
+                ${familyCareBadge}
             `;
 
             // 더블클릭 시 1초 자동 완성 적용
@@ -1379,6 +1379,50 @@ document.addEventListener('DOMContentLoaded', function () {
             updateAppParentWeeklyStatus('chk-hygiene');
             updateAppParentWeeklyStatus('chk-toilet');
             updateAppParentWeeklyStatus('chk-housework');
+
+            // ── 수급자 템플릿의 입력값 유무에 따른 카드 자동 활성화/비활성화 (0분/무입력 시 비활성) ──
+            function hasCardInputData(card) {
+                const cbs = Array.from(card.querySelectorAll('input[type="checkbox"]'))
+                    .filter(cb => cb.id !== 'weeklyServiceCb' && cb.id !== 'monthlyServiceCb' && cb.id !== 'asNeededServiceCb');
+                if (cbs.some(cb => cb.checked)) return true;
+
+                const inputs = Array.from(card.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])'));
+                if (inputs.some(inp => {
+                    const val = inp.value.trim();
+                    return val !== '' && val !== '0';
+                })) return true;
+
+                return false;
+            }
+
+            document.querySelectorAll('.category-card').forEach(card => {
+                if (card.hasAttribute('data-no-toggle')) return;
+                
+                const titleEl = card.querySelector('.sub-title, .section-title');
+                const titleText = titleEl ? titleEl.textContent : '';
+                // 변화상태 및 배변변화 카드는 값이 없어도 무조건 활성 상태 유지 (유저 요청 반영)
+                if (titleText.includes('변화 상태') || titleText.includes('배변변화')) {
+                    const overlay = card.querySelector('.card-overlay');
+                    const btn = card.querySelector('.card-toggle-btn');
+                    if (overlay) overlay.classList.remove('active');
+                    if (btn) btn.classList.remove('off');
+                    return;
+                }
+
+                const overlay = card.querySelector('.card-overlay');
+                const btn = card.querySelector('.card-toggle-btn');
+                
+                if (overlay && btn) {
+                    const hasInput = hasCardInputData(card);
+                    if (hasInput) {
+                        overlay.classList.remove('active');
+                        btn.classList.remove('off');
+                    } else {
+                        overlay.classList.add('active');
+                        btn.classList.add('off');
+                    }
+                }
+            });
 
             // 알림 토스트 띄우기
             showValidationToastSuccess(`🎉 ${recipient.name} 수급자의 하루 표준 일정이 성공적으로 자동 입력되었습니다!`);

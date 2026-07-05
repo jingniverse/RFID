@@ -1480,7 +1480,7 @@ document.addEventListener('DOMContentLoaded', function () {
       row.className = 'recipient-row';
       row.title = '💡 더블클릭하면 이 수급자의 표준 일정을 기록지에 즉시 적용합니다.';
 
-      const dementiaBadge = r.isDementia ? '<span class="badge-dementia">치매</span>' : '';
+      const familyCareBadge = (r.template && r.template.familyCare) ? `<span class="badge-dementia">가족</span>` : '';
       const genderBadge = `<span style="font-size: 11px; color: ${r.gender === '남' ? '#3b82f6' : '#ec4899'}; font-weight: bold; margin-left: 4px;">(${r.gender || '여'})</span>`;
 
       row.innerHTML = `
@@ -1492,7 +1492,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <span class="row-sep">·</span>
           <span class="row-cert">${escapeHtml(r.cert)}</span>
         </div>
-        ${dementiaBadge}
+        ${familyCareBadge}
       `;
 
       // 더블클릭 시 즉시 기록지에 적용
