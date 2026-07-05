@@ -13,7 +13,7 @@
   },
   "build": {
     "appId": "com.rfid.smarthomecare",
-    "productName": "방문?�양 급여기록지 ?�마???�합 ?�브",
+    "productName": "방문?양 급여기록지 ?마???합 ?브",
     "directories": {
       "output": "dist"
     },

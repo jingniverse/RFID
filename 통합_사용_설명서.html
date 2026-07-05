@@ -761,16 +761,14 @@
           <details class="release-item" open>
             <summary class="release-header">
               <span class="version-tag" style="background-color: #7c3aed; color: white;">v1.4.0</span>
-              <span class="release-title">가족요양(60분/90분) 기능 추가 및 레이아웃 최적화</span>
+              <span class="release-title">가족요양(60분/90분) 기능 추가 및 입력 검증 도입</span>
               <span class="release-date">2026.07.06</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>가족요양(60분/90분) 계산 연동</strong>: 등급별 기본 계산(180분/240분) 외에 가족요양 시간(60분/90분)에 맞춘 정밀 자동 분 연산 및 수급자별 템플릿 저장 기능 추가.</li>
-                <li><strong>병렬 레이아웃 조율</strong>: 관리자 화면에서 '가족요양 구분' 영역을 서비스 시간 설정과 동등하게 가로 병렬 배치하고 수직 중앙 수평 얼라인을 완벽 정렬.</li>
-                <li><strong>인풋/체크박스 높이 통일</strong>: 텍스트 입력칸, 셀렉트 상자, 체크박스 테두리 상자 높이를 38px(border-box)로 동일하게 맞춰 정돈된 화면 구성 제공.</li>
-                <li><strong>'가족' 텍스트 배지 노출</strong>: 기존 '치매' 배지 대신 가족요양 여부를 직관적으로 보여주는 보라색 '가족' 배지를 수급자 목록 테이블 및 메인 화면 검색 리스트에 표기.</li>
-                <li><strong>사이드 드로어 패널 너비 확장</strong>: 가족 배지 노출에 따른 공간 확보를 위해 수기 급여제공기록지 수급자 목록 드로어 너비를 330px에서 370px로 확장.</li>
+                <li><strong>가족요양(60분/90분) 자동 계산</strong>: 수급자 등록 화면에서 가족요양 시간(60분 또는 90분)을 선택하면 원래 등급별로 정해진 기본 시간 대신 가족요양 전용 시간(1시간 또는 1시간 30분)으로 일정이 자동 계산되어 저장됩니다.</li>
+                <li><strong>가족 배지(태그) 표시</strong>: 가족요양으로 등록된 수급자는 목록 화면에서 보라색 <span style="color: #7c3aed; font-weight: bold;">[가족]</span> 마크가 이름 옆에 단독으로 노출되어 가족요양 대상자임을 한눈에 바로 확인할 수 있습니다.</li>
+                <li><strong>시간 입력 검증(오류 방지)</strong>: 수급자 일정을 저장할 때 '신체활동', '정서지원' 등 세부 항목에 입력한 분(Minute) 수의 합계가 총 서비스 시간과 맞지 않으면 경고창을 통해 안내합니다. 이를 통해 입력 실수로 일과 시간이 꼬이는 현상을 차단합니다.</li>
               </ul>
             </div>
           </details>
@@ -779,15 +777,14 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #6d28d9; color: white;">v1.3.3</span>
-              <span class="release-title">주간/월간/필요시 비정기 서비스 분리 개편 및 로컬 안정성 보강</span>
+              <span class="release-title">비정기 서비스(주간/월간/필요시) 분리 및 목록 안정성 강화</span>
               <span class="release-date">2026.06.28</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>비정기 서비스 3종 분류</strong>: 기존 주간 서비스 외에 월간(초록색), 필요시(보라색)를 완전히 분리하여 수급자별 템플릿에 안전하게 개별 저장합니다.</li>
-                <li><strong>수기 기록지 일일 자동 필터링</strong>: 주간/월간/필요시 태깅이 붙은 비정기 서비스는 수기 인쇄 대상에서 자동 제외되어 순수 일일 기본 일과표만 출력되도록 보장합니다.</li>
-                <li><strong>로컬 브라우저 철통 로딩 패치</strong>: Electron 포터블 서버를 켜지 않고 단순히 로컬 HTML을 더블클릭해서 열더라도, 캐시와 내장 더미 데이터를 동원하여 수급자 정보가 100% 정상 출력되도록 복원력을 심었습니다.</li>
-                <li><strong>관리자 설정 화면 완성</strong>: 상단 3종 체크박스의 라디오 단추 방식 단일 선택 연동 및 하위 항목 클릭 시 실시간 컬러 마킹 버그를 전면 수정했습니다.</li>
+                <li><strong>비정기 서비스(주간/월간/필요시) 구분 저장</strong>: 매일 제공하는 일정 외에 주기적(주간, 월간)으로 또는 가끔씩(필요시) 수행하는 서비스들을 분리하여 수급자별 일정표에 깔끔하게 저장할 수 있습니다.</li>
+                <li><strong>비정기 서비스 인쇄 제외 필터</strong>: 주간/월간/필요시 배지가 지정된 비정기 일정은 수기 기록지 인쇄 시 자동으로 제외되며, 매일 제공하는 기본 하루 일과표만 깔끔하게 출력되도록 보장합니다.</li>
+                <li><strong>목록 로딩 보장</strong>: 전용 서버를 실행하지 않고 단순히 브라우저에서 인터넷 창을 띄워 로컬 파일을 직접 실행하는 경우에도 수급자 목록 정보가 정상적으로 로딩되도록 오류를 예방했습니다.</li>
               </ul>
             </div>
           </details>
