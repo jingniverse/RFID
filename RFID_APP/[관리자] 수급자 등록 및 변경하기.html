@@ -1366,25 +1366,11 @@
 
         filtered.forEach(r => {
           const tr = document.createElement('tr');
-          // 비정기 서비스 대상 배지 추출
-          let periodicBadges = '';
-          if (r.template) {
-            if (r.template.weeklyCheckboxes?.some(c => c === true) || r.template.weeklySubCheckboxes?.some(c => c === true)) {
-              periodicBadges += '<span style="font-size: 9.5px; background: #ffebee; color: #ef4444; border: 1px solid #fecdd3; padding: 2px 5px; border-radius: 5px; margin-left: 3px; font-weight: bold; white-space: nowrap;">주간</span>';
-            }
-            if (r.template.monthlyCheckboxes?.some(c => c === true) || r.template.monthlySubCheckboxes?.some(c => c === true)) {
-              periodicBadges += '<span style="font-size: 9.5px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 2px 5px; border-radius: 5px; margin-left: 3px; font-weight: bold; white-space: nowrap;">월간</span>';
-            }
-            if (r.template.asNeededCheckboxes?.some(c => c === true) || r.template.asNeededSubCheckboxes?.some(c => c === true)) {
-              periodicBadges += '<span style="font-size: 9.5px; background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 2px 5px; border-radius: 5px; margin-left: 3px; font-weight: bold; white-space: nowrap;">필요시</span>';
-            }
-          }
-          const hasTemplate = r.template ? `<span class="badge-template">등록됨</span>${periodicBadges}` : '<span class="badge-no-template">비어있음</span>';
           const familyCareBadge = (r.template && r.template.familyCare) ? `<span class="badge-dementia">가족</span>` : '';
           const genderBadge = `<span style="font-size: 11px; color: ${r.gender === '남' ? '#2563eb' : '#db2777'}; font-weight: bold; margin-left: 4px;">(${r.gender || '여'})</span>`;
 
           tr.innerHTML = `
-            <td style="font-weight: bold; color: #1e1e2f; text-align: center;">${escapeHtml(r.name)}${genderBadge} ${familyCareBadge} ${hasTemplate}</td>
+            <td style="font-weight: bold; color: #1e1e2f; text-align: center;">${escapeHtml(r.name)}${genderBadge} ${familyCareBadge}</td>
             <td><span class="badge-grade">${r.grade}등급</span></td>
             <td>${escapeHtml(r.birth)}</td>
             <td style="font-family: monospace; font-weight: 500;">${escapeHtml(r.cert)}</td>
