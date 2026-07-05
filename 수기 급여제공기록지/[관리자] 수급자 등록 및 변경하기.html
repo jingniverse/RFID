@@ -1723,6 +1723,12 @@
 
         let templateObj = null;
         if (hasTemplateData) {
+          const totalTimeParsed = parseInt(totalTime, 10) || 0;
+          const sumMinutes = serviceMinutes.reduce((sum, min) => sum + (parseInt(min, 10) || 0), 0);
+          if (totalTimeParsed !== sumMinutes) {
+            alert(`⚠️ 입력하신 분야별 제공시간의 합계(${sumMinutes}분)가 총 서비스 시간(${totalTimeParsed}분)과 일치하지 않습니다.\n분야별 제공시간을 다시 확인하고 조정해 주세요.`);
+            return;
+          }
           templateObj = {
             totalTime,
             startTime,
