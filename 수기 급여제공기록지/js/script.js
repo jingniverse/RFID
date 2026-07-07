@@ -1390,6 +1390,26 @@ document.addEventListener('DOMContentLoaded', function () {
   // 수급자 성명 실시간 검색 이벤트 리스너 연동 (전역 검색 필터 - 요양보호사 검색 제외)
   const searchInput = document.getElementById('recipient-search');
   const btnSearchClear = document.getElementById('btn-search-clear');
+  const btnSortName = document.getElementById('btn-sort-name');
+  const btnSortTime = document.getElementById('btn-sort-time');
+  let currentSortMode = 'name'; // 기본값은 공단 RFID 업무를 고려하여 이름순
+
+  if (btnSortName && btnSortTime) {
+    btnSortName.addEventListener('click', function () {
+      if (currentSortMode === 'name') return;
+      currentSortMode = 'name';
+      btnSortName.classList.add('active');
+      btnSortTime.classList.remove('active');
+      renderRecipientList();
+    });
+    btnSortTime.addEventListener('click', function () {
+      if (currentSortMode === 'time') return;
+      currentSortMode = 'time';
+      btnSortTime.classList.add('active');
+      btnSortName.classList.remove('active');
+      renderRecipientList();
+    });
+  }
 
   if (searchInput) {
     searchInput.addEventListener('input', function () {
@@ -1460,10 +1480,57 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 수급자 성명으로만 필터링 적용 (요양보호사명은 제외)
     const filteredRecipients = recipients.filter(r => {
+      // 보류/대기 수급자는 실시간 패널에서 필터링하여 숨김
+      const status = r.status || '정상';
+      if (status === '보류' || status === '대기') return false;
+
       if (!query) return true;
       const name = r.name.toLowerCase();
       return name.includes(query) || matchesChoSung(name, query);
     });
+
+    // 🔄 선택된 정렬 모드에 따라 정렬 실행
+    if (currentSortMode === 'time') {
+      // ⏰ 근무 시작 시간 -> 종료 시간 -> 이름 가나다 순으로 실시간 정렬
+      filteredRecipients.sort((a, b) => {
+        const getStartTime = (r) => {
+          let time = (r.template && r.template.startTime) ? r.template.startTime.trim() : "";
+          if (!time) return "99:99"; // 시간 정보 없는 경우 맨 뒤로 정렬
+          if (/^\d:\d{2}$/.test(time)) {
+            time = "0" + time; // "9:00" -> "09:00" 보정
+          }
+          return time;
+        };
+
+        const getEndTime = (r) => {
+          let time = (r.template && r.template.endTime) ? r.template.endTime.trim() : "";
+          if (!time) return "99:99";
+          if (/^\d:\d{2}$/.test(time)) {
+            time = "0" + time; // "9:00" -> "09:00" 보정
+          }
+          return time;
+        };
+
+        const startA = getStartTime(a);
+        const startB = getStartTime(b);
+
+        if (startA !== startB) {
+          return startA.localeCompare(startB);
+        }
+
+        const endA = getEndTime(a);
+        const endB = getEndTime(b);
+
+        if (endA !== endB) {
+          return endA.localeCompare(endB);
+        }
+
+        return a.name.localeCompare(b.name, 'ko');
+      });
+    } else {
+      // 👥 기본 이름(가나다) 순 정렬
+      filteredRecipients.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
 
     if (filteredRecipients.length === 0) {
       recipientListContainer.innerHTML = `

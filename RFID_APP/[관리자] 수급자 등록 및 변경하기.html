@@ -243,6 +243,17 @@
       background-color: #fcfbff;
     }
 
+    /* 딤드(비활성화) 수급자 행 스타일 */
+    .row-dimmed {
+      background-color: #e2e8f0 !important;
+    }
+    .row-dimmed td {
+      color: #64748b !important;
+    }
+    .row-dimmed:hover {
+      background-color: #e2e8f0 !important;
+    }
+
     .badge-grade {
       font-size: 10px;
       background: rgba(118, 75, 162, 0.08);
@@ -953,11 +964,11 @@
 
         <div id="template-fields-wrap" class="template-fields-wrap">
           <!-- 시간 정보 및 가족요양 설정 가로 배치 -->
-          <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-start;">
+          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-start;">
             <!-- 왼쪽: 서비스 시간 설정 -->
-            <div style="flex: 2; min-width: 320px;">
+            <div style="flex: 2.2; min-width: 440px;">
               <div class="template-section-title" style="margin-top: 0; margin-bottom: 10px; height: 20px; display: flex; align-items: center;">🕒 서비스 시간 설정</div>
-              <div class="time-row-flex-db" style="margin-bottom: 0; gap: 20px;">
+              <div class="time-row-flex-db" style="margin-bottom: 0; gap: 15px;">
                 <div class="time-input-group-db">
                   <label for="temp-start-time">시작시간</label>
                   <input type="text" id="temp-start-time" class="time-mask-db" maxlength="5" placeholder="09:00">
@@ -973,15 +984,28 @@
               </div>
             </div>
 
-            <!-- 오른쪽: 가족요양 구분 -->
-            <div style="flex: 1; min-width: 200px;">
+            <!-- 중간: 가족요양 구분 -->
+            <div style="flex: 0.9; min-width: 140px;">
               <div class="template-section-title" style="margin-top: 0; margin-bottom: 10px; height: 20px; display: flex; align-items: center;">가족요양 구분</div>
-              <div class="time-row-flex-db" style="margin-bottom: 0;">
+              <div class="time-row-flex-db" style="margin-bottom: 0; gap: 8px;">
                 <label class="chk-label-db" id="lbl-family-60" style="padding: 0 12px; margin: 0; justify-content: center; height: 38px; box-sizing: border-box;">
                   <input type="checkbox" id="chk-family-60" style="width: 16px; height: 16px; accent-color: #764ba2; cursor: pointer;"> &nbsp;60분
                 </label>
                 <label class="chk-label-db" id="lbl-family-90" style="padding: 0 12px; margin: 0; justify-content: center; height: 38px; box-sizing: border-box;">
                   <input type="checkbox" id="chk-family-90" style="width: 16px; height: 16px; accent-color: #764ba2; cursor: pointer;"> &nbsp;90분
+                </label>
+              </div>
+            </div>
+
+            <!-- 오른쪽: 상태 구분 (보류/대기) -->
+            <div style="flex: 0.9; min-width: 140px;">
+              <div class="template-section-title" style="margin-top: 0; margin-bottom: 10px; height: 20px; display: flex; align-items: center;">상태 구분</div>
+              <div class="time-row-flex-db" style="margin-bottom: 0; gap: 8px;">
+                <label class="chk-label-db" id="lbl-status-hold" style="padding: 0 12px; margin: 0; justify-content: center; height: 38px; box-sizing: border-box;">
+                  <input type="checkbox" id="chk-status-hold" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;"> &nbsp;보류
+                </label>
+                <label class="chk-label-db" id="lbl-status-waiting" style="padding: 0 12px; margin: 0; justify-content: center; height: 38px; box-sizing: border-box;">
+                  <input type="checkbox" id="chk-status-waiting" style="width: 16px; height: 16px; accent-color: #f97316; cursor: pointer;"> &nbsp;대기
                 </label>
               </div>
             </div>
@@ -1341,6 +1365,18 @@
         }
       });
 
+      // 보류/대기 체크박스 상호 배타적 동작 연동
+      const chkHold = document.getElementById('chk-status-hold');
+      const chkWaiting = document.getElementById('chk-status-waiting');
+      if (chkHold && chkWaiting) {
+        chkHold.addEventListener('change', function () {
+          if (this.checked) chkWaiting.checked = false;
+        });
+        chkWaiting.addEventListener('change', function () {
+          if (this.checked) chkHold.checked = false;
+        });
+      }
+
       // 리스트 렌더링
       function renderList() {
         tableBody.innerHTML = '';
@@ -1366,11 +1402,23 @@
 
         filtered.forEach(r => {
           const tr = document.createElement('tr');
+          
+          // 보류/대기 상태에 따른 행 어두운 배경(딤드) 및 고대비 솔리드 배지 설정
+          const status = r.status || '정상';
+          let statusBadge = '';
+          if (status === '보류') {
+            tr.classList.add('row-dimmed');
+            statusBadge = `<span style="font-size: 9.5px; background: #dc2626; color: white; padding: 2px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin-left: 4px; vertical-align: middle; line-height: 1.2;">보류</span>`;
+          } else if (status === '대기') {
+            tr.classList.add('row-dimmed');
+            statusBadge = `<span style="font-size: 9.5px; background: #ea580c; color: white; padding: 2px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin-left: 4px; vertical-align: middle; line-height: 1.2;">대기</span>`;
+          }
+
           const familyCareBadge = (r.template && r.template.familyCare) ? `<span class="badge-dementia">가족</span>` : '';
           const genderBadge = `<span style="font-size: 11px; color: ${r.gender === '남' ? '#2563eb' : '#db2777'}; font-weight: bold; margin-left: 4px;">(${r.gender || '여'})</span>`;
 
           tr.innerHTML = `
-            <td style="font-weight: bold; color: #1e1e2f; text-align: center;">${escapeHtml(r.name)}${genderBadge} ${familyCareBadge}</td>
+            <td style="font-weight: bold; color: #1e1e2f; text-align: center;">${escapeHtml(r.name)}${genderBadge} ${familyCareBadge}${statusBadge}</td>
             <td><span class="badge-grade">${r.grade}등급</span></td>
             <td>${escapeHtml(r.birth)}</td>
             <td style="font-family: monospace; font-weight: 500;">${escapeHtml(r.cert)}</td>
@@ -1399,6 +1447,8 @@
         gradeSelect.value = '';
         certInput.value = '';
         caregiverInput.value = '';
+        if (document.getElementById('chk-status-hold')) document.getElementById('chk-status-hold').checked = false;
+        if (document.getElementById('chk-status-waiting')) document.getElementById('chk-status-waiting').checked = false;
 
         // 치매환자 여부 초기화 및 필드 상태 갱신
         const dementiaInp = document.getElementById('dementia-db');
@@ -1426,6 +1476,10 @@
         gradeSelect.value = r.grade;
         certInput.value = r.cert;
         caregiverInput.value = r.caregiver;
+
+        const status = r.status || '정상';
+        if (document.getElementById('chk-status-hold')) document.getElementById('chk-status-hold').checked = (status === '보류');
+        if (document.getElementById('chk-status-waiting')) document.getElementById('chk-status-waiting').checked = (status === '대기');
         currentEditingTemplate = r.template || null;
 
         // 치매환자 여부 복원 및 필드 상태 갱신
@@ -1740,6 +1794,10 @@
           };
         }
 
+        const isHold = document.getElementById('chk-status-hold')?.checked;
+        const isWaiting = document.getElementById('chk-status-waiting')?.checked;
+        const statusVal = isHold ? '보류' : (isWaiting ? '대기' : '정상');
+
         if (editId) {
           // 수정 완료
           const idx = recipients.findIndex(r => r.id === editId);
@@ -1753,6 +1811,7 @@
               cert,
               caregiver,
               isDementia: document.getElementById('dementia-db').checked, // save dementia status
+              status: statusVal, // 보류/대기 상태 저장
               template: templateObj // 직접 수정한 스케줄 저장
             };
             alert('성공적으로 수급자 정보가 수정되었습니다.');
@@ -1768,6 +1827,7 @@
             cert,
             caregiver,
             isDementia: document.getElementById('dementia-db').checked, // save dementia status
+            status: statusVal, // 보류/대기 상태 저장
             template: templateObj // 직접 입력한 신규 스케줄 저장
           });
           alert('성공적으로 신규 수급자가 등록되었습니다.');
