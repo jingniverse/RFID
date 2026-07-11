@@ -1363,6 +1363,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
       recipients = initialList;
       localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
+
+      // 🏢 기관 정보 동적 이식
+      let centerName = '';
+      let centerCode = '';
+      if (window.location.protocol.startsWith('http')) {
+        try {
+          const res = await fetch('/api/load-center-info');
+          if (res.ok) {
+            const centerData = await res.json();
+            centerName = centerData.centerName || '';
+            centerCode = centerData.centerCode || '';
+          }
+        } catch (e) {
+          console.error('기관 정보 API 로드 실패:', e);
+        }
+      } else {
+        centerName = typeof INITIAL_CENTER_NAME !== 'undefined' ? INITIAL_CENTER_NAME : '';
+        centerCode = typeof INITIAL_CENTER_CODE !== 'undefined' ? INITIAL_CENTER_CODE : '';
+      }
+
+      const localCenterName = localStorage.getItem('rfid_center_name');
+      const localCenterCode = localStorage.getItem('rfid_center_code');
+      if (localCenterName) centerName = localCenterName;
+      if (localCenterCode) centerCode = localCenterCode;
+
+      // 인쇄 헤더 엘리먼트에 주입
+      const nameEl = document.getElementById('print-center-name');
+      const codeEl = document.getElementById('print-center-code');
+      if (nameEl) nameEl.innerHTML = centerName ? escapeHtml(centerName) : '&nbsp;';
+      if (codeEl) codeEl.innerHTML = centerCode ? escapeHtml(centerCode) : '&nbsp;';
+
     } catch (e) {
       console.error('데이터 로드 중 오류 발생:', e);
       recipients = typeof INITIAL_RECIPIENTS !== 'undefined' ? [...INITIAL_RECIPIENTS] : [];

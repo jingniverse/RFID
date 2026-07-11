@@ -887,6 +887,65 @@
     .sub-chk-label-db input[type="checkbox"].as-needed-checked {
       accent-color: #6d28d9 !important;
     }
+
+    /* 🏢 기관 설정 카드 전용 스타일 */
+    .center-setup-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(118, 75, 162, 0.2);
+      box-shadow: 0 10px 30px rgba(118, 75, 162, 0.05);
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: all 0.3s ease-in-out;
+    }
+    .center-setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .center-setup-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .center-setup-group label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #475569;
+    }
+    .center-setup-group input {
+      height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .center-setup-group input:focus {
+      border-color: #764ba2;
+      box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+    }
+    .center-setup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 8px;
+    }
+    .center-setup-header h4 {
+      margin: 0;
+      font-size: 14px;
+      color: #764ba2;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
   </style>
 </head>
 
@@ -902,6 +961,27 @@
       <!-- 🔍 1. 검색바 영역 (최상단 배치) -->
       <div class="search-bar-wrap">
         <input type="text" id="search-db" class="search-input-db" placeholder="🔍 찾으실 수급자 성명 또는 요양보호사를 검색해 주세요...">
+      </div>
+
+      <!-- 🏢 기관 정보 최초 설정 카드 (비어있을 때만 노출) -->
+      <div id="center-setup-card" class="center-setup-card" style="display: none;">
+        <div class="center-setup-header">
+          <h4>🏢 장기요양기관 기본 설정</h4>
+          <span style="font-size: 11.5px; color: #64748b; font-weight: normal;">* 최초 1회만 등록하시면 기록지 인쇄 시 자동 연동됩니다.</span>
+        </div>
+        <div class="center-setup-grid">
+          <div class="center-setup-group">
+            <label for="center-name-db">장기요양기관명</label>
+            <input type="text" id="center-name-db" placeholder="예: 순시미재가복지센터 은평1호점">
+          </div>
+          <div class="center-setup-group">
+            <label for="center-code-db">장기요양기관기호</label>
+            <input type="text" id="center-code-db" placeholder="예: 2-11380-00518">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+          <button id="btn-save-center" style="padding: 10px 24px; background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.25);">설정 저장</button>
+        </div>
       </div>
 
       <!-- ✍️ 2. 수급자 등록/수정 폼 카드 (중간 배치) -->
@@ -1293,6 +1373,40 @@
             localStorage.setItem('rfid_recipients_timestamp', storedTimestamp || Date.now());
           }
         }
+
+        // 🏢 기관 정보 로드 연동
+        let centerName = '';
+        let centerCode = '';
+        if (window.location.protocol.startsWith('http')) {
+          try {
+            const res = await fetch('/api/load-center-info');
+            if (res.ok) {
+              const centerData = await res.json();
+              centerName = centerData.centerName || '';
+              centerCode = centerData.centerCode || '';
+            }
+          } catch (e) {
+            console.error('기관 정보 로드 실패:', e);
+          }
+        } else {
+          centerName = typeof INITIAL_CENTER_NAME !== 'undefined' ? INITIAL_CENTER_NAME : '';
+          centerCode = typeof INITIAL_CENTER_CODE !== 'undefined' ? INITIAL_CENTER_CODE : '';
+        }
+
+        const localCenterName = localStorage.getItem('rfid_center_name');
+        const localCenterCode = localStorage.getItem('rfid_center_code');
+        if (localCenterName) centerName = localCenterName;
+        if (localCenterCode) centerCode = localCenterCode;
+
+        document.getElementById('center-name-db').value = centerName;
+        document.getElementById('center-code-db').value = centerCode;
+
+        const card = document.getElementById('center-setup-card');
+        if (centerName && centerCode) {
+          card.style.display = 'none';
+        } else {
+          card.style.display = 'block';
+        }
       }
 
       async function saveRecipients() {
@@ -1300,13 +1414,19 @@
         localStorage.setItem('rfid_recipients_timestamp', newTimestamp);
         localStorage.setItem('rfid_recipients', JSON.stringify(recipients));
 
+        const payload = {
+          recipients: recipients,
+          centerName: localStorage.getItem('rfid_center_name') || '',
+          centerCode: localStorage.getItem('rfid_center_code') || ''
+        };
+
         // 🌟 로컬 서버 환경일 경우 API 저장 우선
         if (window.location.protocol.startsWith('http')) {
           try {
             const res = await fetch('/api/save-recipients', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(recipients)
+              body: JSON.stringify(payload)
             });
             if (res.ok) {
               const result = await res.json();
@@ -1318,7 +1438,7 @@
             alert('⚠️ 로컬 서버 통신 실패: ' + e.message);
           }
         } else if (window.api && window.api.saveRecipients) {
-          const result = await window.api.saveRecipients(recipients);
+          const result = await window.api.saveRecipients(payload);
           if (!result.success) {
             alert('⚠️ 로컬 recipients.js 파일에 저장하지 못했습니다: ' + result.error);
           }
@@ -2312,6 +2432,41 @@
       gradeSelect.addEventListener('change', calculateTemplateTime);
 
       // 데이터 백업 및 다운로드 기능이 자동 파일저장 처리로 대체됨.
+
+      // 🏢 기관 설정 저장 버튼 및 더블클릭 토글 이벤트 리스너 바인딩
+      const dashboardTitle = document.querySelector('.dashboard-header h2');
+      if (dashboardTitle) {
+        dashboardTitle.style.cursor = 'pointer';
+        dashboardTitle.title = '더블 클릭하여 기관 정보 설정창을 표시합니다.';
+        dashboardTitle.addEventListener('dblclick', function() {
+          const card = document.getElementById('center-setup-card');
+          if (card.style.display === 'none') {
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      const btnSaveCenter = document.getElementById('btn-save-center');
+      if (btnSaveCenter) {
+        btnSaveCenter.addEventListener('click', async function() {
+          const nameVal = document.getElementById('center-name-db').value.trim();
+          const codeVal = document.getElementById('center-code-db').value.trim();
+          if (!nameVal) { alert('기관명을 입력해 주세요.'); return; }
+          if (!codeVal) { alert('기관기호를 입력해 주세요.'); return; }
+
+          localStorage.setItem('rfid_center_name', nameVal);
+          localStorage.setItem('rfid_center_code', codeVal);
+
+          // 전체 저장 및 동기화 수행
+          await saveRecipients();
+
+          alert('🏢 기관 정보가 성공적으로 저장되었습니다!\n수기 기록지 인쇄 시 해당 정보가 실시간으로 자동 적용됩니다.');
+          document.getElementById('center-setup-card').style.display = 'none';
+        });
+      }
 
       // 초기화 기동
       loadRecipients().then(() => {

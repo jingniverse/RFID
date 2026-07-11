@@ -325,13 +325,45 @@ if (!gotTheLock) {
         }
       }
 
+      // 1.5. API: load-center-info
+      if (pathname === '/api/load-center-info' && req.method === 'GET') {
+        const filePath = getRecipientsPath();
+        if (!fs.existsSync(filePath)) {
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ centerName: '', centerCode: '' }));
+        }
+        try {
+          const fileContent = fs.readFileSync(filePath, 'utf-8');
+          const nameMatch = fileContent.match(/var INITIAL_CENTER_NAME = (["'])([\s\S]*?)\1;/);
+          const codeMatch = fileContent.match(/var INITIAL_CENTER_CODE = (["'])([\s\S]*?)\1;/);
+          const centerName = nameMatch ? nameMatch[2] : '';
+          const centerCode = codeMatch ? codeMatch[2] : '';
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ centerName, centerCode }));
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ error: err.message }));
+        }
+      }
+
       // 2. API: save-recipients
       if (pathname === '/api/save-recipients' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => { body += chunk; });
         req.on('end', () => {
           try {
-            const recipients = JSON.parse(body);
+            const parsed = JSON.parse(body);
+            let recipients = [];
+            let centerName = '';
+            let centerCode = '';
+            if (Array.isArray(parsed)) {
+              recipients = parsed;
+            } else {
+              recipients = parsed.recipients || [];
+              centerName = parsed.centerName || '';
+              centerCode = parsed.centerCode || '';
+            }
+
             const filePath = getRecipientsPath();
             const timestamp = Date.now();
             const jsContent = `/**
@@ -345,6 +377,9 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
   var INITIAL_RECIPIENTS_TIMESTAMP = ${timestamp};
 
   var INITIAL_RECIPIENTS = ${stringifyWithComments(recipients)};
+
+  var INITIAL_CENTER_NAME = ${JSON.stringify(centerName)};
+  var INITIAL_CENTER_CODE = ${JSON.stringify(centerCode)};
 }
 `;
             const dir = path.dirname(filePath);
