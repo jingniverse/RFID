@@ -974,8 +974,11 @@
         </div>
         <div class="center-setup-grid">
           <div class="center-setup-group">
-            <label for="center-name-db">장기요양기관명</label>
-            <input type="text" id="center-name-db" placeholder="예: 순시미재가복지센터 은평1호점">
+            <label for="center-branch-db">장기요양기관 지점명 (예: 은평1호점)</label>
+            <input type="text" id="center-branch-db" placeholder="예: 은평1호점" value="은평1호점">
+            <div style="font-size: 11.5px; color: #764ba2; margin-top: 3px; font-weight: bold;">
+              🏢 등록 예정 기관명: <span style="color: #475569; font-weight: normal;">순시미재가복지센터 </span><span id="center-name-preview" style="text-decoration: underline;">은평1호점</span>
+            </div>
           </div>
           <div class="center-setup-group">
             <label for="center-code-db">장기요양기관기호</label>
@@ -1401,7 +1404,18 @@
         if (localCenterName) centerName = localCenterName;
         if (localCenterCode) centerCode = localCenterCode;
 
-        document.getElementById('center-name-db').value = centerName;
+        let branchVal = '';
+        if (centerName) {
+          if (centerName.startsWith('순시미재가복지센터 ')) {
+            branchVal = centerName.replace('순시미재가복지센터 ', '');
+          } else {
+            branchVal = centerName;
+          }
+        } else {
+          branchVal = '은평1호점'; // 최초 기본 예시 폴백
+        }
+        document.getElementById('center-branch-db').value = branchVal;
+        document.getElementById('center-name-preview').textContent = branchVal || '(지점명을 입력해 주세요)';
         document.getElementById('center-code-db').value = centerCode;
 
         const card = document.getElementById('center-setup-card');
@@ -2453,14 +2467,26 @@
         });
       }
 
+      // 지점명 실시간 미리보기 바인딩
+      const centerBranchInput = document.getElementById('center-branch-db');
+      if (centerBranchInput) {
+        centerBranchInput.addEventListener('input', function() {
+          const previewEl = document.getElementById('center-name-preview');
+          if (previewEl) {
+            previewEl.textContent = this.value.trim() || '(지점명을 입력해 주세요)';
+          }
+        });
+      }
+
       const btnSaveCenter = document.getElementById('btn-save-center');
       if (btnSaveCenter) {
         btnSaveCenter.addEventListener('click', async function() {
-          const nameVal = document.getElementById('center-name-db').value.trim();
+          const branchVal = document.getElementById('center-branch-db').value.trim();
           const codeVal = document.getElementById('center-code-db').value.trim();
-          if (!nameVal) { alert('기관명을 입력해 주세요.'); return; }
+          if (!branchVal) { alert('지점명을 입력해 주세요. (예: 은평1호점)'); return; }
           if (!codeVal) { alert('기관기호를 입력해 주세요.'); return; }
 
+          const nameVal = '순시미재가복지센터 ' + branchVal;
           localStorage.setItem('rfid_center_name', nameVal);
           localStorage.setItem('rfid_center_code', codeVal);
 
