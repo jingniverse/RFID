@@ -954,7 +954,10 @@
   <div class="dashboard-container">
     <div class="dashboard-header">
       <h2>👥 수급자 및 요양보호사 정밀 관리 대시보드</h2>
-      <button onclick="window.close();" class="btn-back">◀️ 기록지 작성 화면으로</button>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="btn-edit-center" class="btn-back" style="background: #475569; display: none;">⚙️ 기관 정보 수정</button>
+        <button onclick="window.close();" class="btn-back">◀️ 기록지 작성 화면으로</button>
+      </div>
     </div>
 
     <div class="grid-layout">
@@ -1402,10 +1405,13 @@
         document.getElementById('center-code-db').value = centerCode;
 
         const card = document.getElementById('center-setup-card');
+        const btnEditCenter = document.getElementById('btn-edit-center');
         if (centerName && centerCode) {
           card.style.display = 'none';
+          if (btnEditCenter) btnEditCenter.style.display = 'inline-block';
         } else {
           card.style.display = 'block';
+          if (btnEditCenter) btnEditCenter.style.display = 'none';
         }
       }
 
@@ -2433,12 +2439,10 @@
 
       // 데이터 백업 및 다운로드 기능이 자동 파일저장 처리로 대체됨.
 
-      // 🏢 기관 설정 저장 버튼 및 더블클릭 토글 이벤트 리스너 바인딩
-      const dashboardTitle = document.querySelector('.dashboard-header h2');
-      if (dashboardTitle) {
-        dashboardTitle.style.cursor = 'pointer';
-        dashboardTitle.title = '더블 클릭하여 기관 정보 설정창을 표시합니다.';
-        dashboardTitle.addEventListener('dblclick', function() {
+      // 🏢 기관 설정 버튼 및 저장 이벤트 리스너 바인딩
+      const btnEditCenter = document.getElementById('btn-edit-center');
+      if (btnEditCenter) {
+        btnEditCenter.addEventListener('click', function() {
           const card = document.getElementById('center-setup-card');
           if (card.style.display === 'none') {
             card.style.display = 'block';
@@ -2465,6 +2469,7 @@
 
           alert('🏢 기관 정보가 성공적으로 저장되었습니다!\n수기 기록지 인쇄 시 해당 정보가 실시간으로 자동 적용됩니다.');
           document.getElementById('center-setup-card').style.display = 'none';
+          if (btnEditCenter) btnEditCenter.style.display = 'inline-block';
         });
       }
 
