@@ -1,6 +1,6 @@
 {
   "name": "rfid-smart-home-care",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "방문?양 급여?공기록지 ?마???합 ?브",
   "main": "main.js",
   "scripts": {
