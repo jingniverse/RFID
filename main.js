@@ -22,11 +22,11 @@ if (!gotTheLock) {
     }
   });
 
-  // 🌟 수급자 데이터 파일 경로 결정 함수
+  // 🌟 수급자 데이터 파일 경로 결정 함수 (포터블 EXE 실제 위치 100% 탐색)
   function getRecipientsPath() {
     if (app.isPackaged) {
-      // 포터블/설치형 EXE 실행 파일이 위치한 실제 폴더 경로
-      const exeDir = path.dirname(app.getPath('exe'));
+      // 💡 electron-builder 포터블 환경에서는 PORTABLE_EXECUTABLE_DIR가 실제 exe 폴더를 가리킴
+      const exeDir = process.env.PORTABLE_EXECUTABLE_DIR || path.dirname(app.getPath('exe'));
       const externalPath = path.join(exeDir, 'recipients.js');
       
       // 만약 외부 실행 폴더에 recipients.js가 아직 없다면 내부 기본 템플릿을 복사 생성
@@ -121,7 +121,7 @@ if (!gotTheLock) {
       const parsedUrl = url.parse(req.url, true);
       let pathname = parsedUrl.pathname;
 
-      // 1. API: load-recipients
+      // 1. API: load-recipients (vm 안전 실행 파싱 적용)
       if (pathname === '/api/load-recipients' && req.method === 'GET') {
         const filePath = getRecipientsPath();
         if (!fs.existsSync(filePath)) {
@@ -130,18 +130,19 @@ if (!gotTheLock) {
         }
         try {
           const fileContent = fs.readFileSync(filePath, 'utf-8');
-          const jsonMatch = fileContent.match(/var INITIAL_RECIPIENTS = (\[[\s\S]*?\]);/);
-          
-          let data = [];
-          if (jsonMatch) {
-            try {
+          const vm = require('vm');
+          const sandbox = { INITIAL_RECIPIENTS: [] };
+          try {
+            vm.runInNewContext(fileContent, sandbox);
+          } catch (vmErr) {
+            console.warn("VM eval 실패, 정규식 대체 시도:", vmErr);
+            const jsonMatch = fileContent.match(/var INITIAL_RECIPIENTS = (\[[\s\S]*?\])(?:\s*;|\s*$)/);
+            if (jsonMatch) {
               const cleanJsonText = jsonMatch[1].replace(/\/\/.*/g, '');
-              data = JSON.parse(cleanJsonText);
-            } catch (parseErr) {
-              console.error("JSON parsing error after comment removal:", parseErr);
-              data = [];
+              sandbox.INITIAL_RECIPIENTS = JSON.parse(cleanJsonText);
             }
           }
+          const data = Array.isArray(sandbox.INITIAL_RECIPIENTS) ? sandbox.INITIAL_RECIPIENTS : [];
           res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
           return res.end(JSON.stringify(data));
         } catch (err) {
