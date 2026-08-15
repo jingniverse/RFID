@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>장기요양급여 제공기록지 (롱텀 특정내역 수정)</title>
+  <link rel="icon" href="../favicon.png" type="image/png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- 🔄 1. 좌측 상단 버전 전환 및 설명서 플로팅 버튼군 (인쇄 시 자동 숨김) -->
+  <div class="version-switch-floating">
+    <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver purple">
+      📱 RFID APP형 화면으로 전환
+    </a>
+    <a href="../수기 급여제공기록지/[수기급여제공기록지].html" class="btn-switch-ver">
+      📝 수기 급여제공기록지 화면으로 전환
+    </a>
+    <button
+      onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');"
+      class="btn-switch-ver">
+      📖 사용 설명서
+    </button>
+  </div>
+
+  <!-- 🏛️ 2. 메인 워크스페이스 (중앙 롱텀 팝업창 + 측면 상용구 가이드) -->
+  <main class="main-stage">
+
+    <!-- 롱텀 1:1 정밀 팝업 윈도우 -->
+    <div class="longterm-window">
+
+      <!-- 윈도우 헤더 타이틀바 -->
+      <div class="lt-titlebar">
+        <span class="lt-title-text">롱텀 일일 RFID 점검</span>
+      </div>
+
+      <!-- 윈도우 본문 -->
+      <div class="lt-content">
+
+        <!-- 롱텀 데이터 테이블 -->
+        <table class="lt-table">
+          <colgroup>
+            <col style="width: 44px;">
+            <col style="width: 75px;">
+            <col style="width: 75px;">
+            <col style="width: 180px;">
+          </colgroup>
+
+          <!-- 수급자명 -->
+          <tr>
+            <th colspan="2">수급자명</th>
+            <td colspan="2" id="ltRecipientName">김수급</td>
+          </tr>
+
+          <!-- 요양요원명 -->
+          <tr>
+            <th colspan="2">요양요원명</th>
+            <td colspan="2" id="ltCaregiverName">김요양</td>
+          </tr>
+
+          <!-- 서비스일자 -->
+          <tr>
+            <th colspan="2">서비스일자</th>
+            <td colspan="2" id="ltServiceDate">2026-08-05</td>
+          </tr>
+
+          <!-- 급여종류 -->
+          <tr>
+            <th colspan="2">급여종류</th>
+            <td colspan="2">
+              방문요양 <span id="ltTotalTimeDisplay" style="margin-left: 20px; color: #555;">(총시간 : 223분)</span>
+            </td>
+          </tr>
+
+          <!-- 요양 기타 정보 (버티컬 헤더 옆으로 6개 세부사항 집어넣음) -->
+          <tr>
+            <th rowspan="6" class="vertical-header">요양<br>기타<br>정보</th>
+            <th class="sub-header">신체활동지원</th>
+            <td class="time-cell">
+              <div class="time-input-box">
+                <input type="text" class="time-input" id="timePhysical" value="040" maxlength="3" readonly> 분
+              </div>
+            </td>
+            <td rowspan="6" class="summary-cell">
+              <div class="time-summary-area">
+                <div class="time-sum-blue" id="displayEnteredTime">입력시간 : 223분</div>
+                <div class="time-remain-red" id="displayRemainTime">잔여시간 : 0분</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="sub-header">인지자극활동</th>
+            <td class="time-cell">
+              <div class="time-input-box">
+                <input type="text" class="time-input" id="timeCogStim" value="000" maxlength="3" readonly> 분
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="sub-header">일상생활 함께하기</th>
+            <td class="time-cell">
+              <div class="time-input-box">
+                <input type="text" class="time-input" id="timeDailyTogether" value="000" maxlength="3" readonly> 분
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="sub-header">인지행동변화 관리</th>
+            <td class="time-cell">
+              <div class="time-input-box">
+                <input type="text" class="time-input" id="timeCogBehavior" value="000" maxlength="3" readonly> 분
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="sub-header">정서지원</th>
+            <td class="time-cell">
+              <div class="time-input-box">
+                <input type="text" class="time-input" id="timeEmotional" value="020" maxlength="3" readonly> 분
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="sub-header">가사, 일상생활지원</th>
+            <td class="time-cell">
+              <div class="time-input-box">
+                <input type="text" class="time-input" id="timeHousehold" value="163" maxlength="3" readonly> 분
+              </div>
+            </td>
+          </tr>
+
+          <!-- 신체기능 상태 -->
+          <tr>
+            <th colspan="2">신체기능</th>
+            <td colspan="2">
+              <div class="lt-radio-group">
+                <label class="lt-radio-item"><input type="radio" name="radioBody" value="호전"> 호전</label>
+                <label class="lt-radio-item"><input type="radio" name="radioBody" value="유지" checked> 유지</label>
+                <label class="lt-radio-item"><input type="radio" name="radioBody" value="악화"> 악화</label>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 식사기능 상태 -->
+          <tr>
+            <th colspan="2">식사기능</th>
+            <td colspan="2">
+              <div class="lt-radio-group">
+                <label class="lt-radio-item"><input type="radio" name="radioMeal" value="호전"> 호전</label>
+                <label class="lt-radio-item"><input type="radio" name="radioMeal" value="유지" checked> 유지</label>
+                <label class="lt-radio-item"><input type="radio" name="radioMeal" value="악화"> 악화</label>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 인지기능 상태 -->
+          <tr>
+            <th colspan="2">인지기능</th>
+            <td colspan="2">
+              <div class="lt-radio-group">
+                <label class="lt-radio-item"><input type="radio" name="radioCognitive" value="호전"> 호전</label>
+                <label class="lt-radio-item"><input type="radio" name="radioCognitive" value="유지" checked> 유지</label>
+                <label class="lt-radio-item"><input type="radio" name="radioCognitive" value="악화"> 악화</label>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 배변 변화 (버티컬 헤더 옆으로 대변/소변 실수횟수 집어넣음) -->
+          <tr>
+            <th rowspan="2" class="vertical-header">배변<br>변화</th>
+            <th class="sub-header">대변 실수 횟수</th>
+            <td colspan="2">
+              <div class="time-input-box">
+                <input type="text" class="count-input" id="fecesCount" value="0" readonly> 회
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="sub-header">소변 실수 횟수</th>
+            <td colspan="2">
+              <div class="time-input-box">
+                <input type="text" class="count-input" id="urineCount" value="0" readonly> 회
+              </div>
+            </td>
+          </tr>
+
+          <!-- 특이 사항 (타이핑 불가) -->
+          <tr>
+            <th colspan="2">특이 사항</th>
+            <td colspan="2">
+              <textarea class="lt-textarea" id="ltNoteArea" readonly></textarea>
+            </td>
+          </tr>
+
+          <!-- 신체활동지원 체크 항목 -->
+          <tr>
+            <th colspan="2">신체활동지원</th>
+            <td colspan="2">
+              <div class="checkbox-grid">
+                <label class="lt-check-item"><input type="checkbox" id="chk_hygiene" checked> 개인위생</label>
+                <label class="lt-check-item"><input type="checkbox" id="chk_wash"> 몸 씻기</label>
+                <label class="lt-check-item"><input type="checkbox" id="chk_meal"> 식사 도움</label>
+                <label class="lt-check-item"><input type="checkbox" id="chk_position"> 체위변경</label>
+                <label class="lt-check-item"><input type="checkbox" id="chk_move" checked> 이동도움</label>
+                <label class="lt-check-item"><input type="checkbox" id="chk_toilet" checked> 화장실이용하기</label>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 가사 및 일상생활지원 체크 항목 -->
+          <tr>
+            <th colspan="2">가사 및 일상생활지원</th>
+            <td colspan="2">
+              <div class="checkbox-grid" style="flex-direction: column; gap: 4px;">
+                <label class="lt-check-item"><input type="checkbox" id="chk_living"> 식사준비, 청소, 주변정리정돈, 세탁 등</label>
+                <label class="lt-check-item"><input type="checkbox" id="chk_personal_activity" checked> 개인활동지원</label>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+      </div>
+    </div>
+
+    <!-- 측면 상용구 픽커 및 점검 가이드 -->
+    <aside class="side-guide-panel">
+
+      <!-- 특이사항 스마트 조합 픽커 카드 -->
+      <div class="guide-card">
+        <div class="guide-card-title">📝 특이사항 사유 조합기</div>
+
+        <!-- 1. 화자 선택 (수급자 / 보호자) -->
+        <div class="picker-section">
+          <div class="picker-sub-title">1. 요청 화자 선택</div>
+          <div class="speaker-radio-group">
+            <label class="speaker-radio-btn active">
+              <input type="radio" name="noteSpeaker" value="수급자" checked>
+              <span>👤 수급자 요청</span>
+            </label>
+            <label class="speaker-radio-btn">
+              <input type="radio" name="noteSpeaker" value="보호자">
+              <span>👥 보호자 요청</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. 특이사항 사유 선택 (중복 선택 가능) -->
+        <div class="picker-section" style="margin-top: 12px;">
+          <div class="picker-sub-title">2. 제공 사유 선택 (중복 가능)</div>
+          <div class="reason-toggle-grid">
+            <button type="button" class="reason-toggle-btn" id="btnReasonContinuous" data-reason="continuous">
+              <span class="reason-check-icon">✓</span>
+              <span>연속서비스 제공</span>
+            </button>
+            <button type="button" class="reason-toggle-btn" id="btnReasonHoliday" data-reason="holiday">
+              <span class="reason-check-icon">✓</span>
+              <span>공휴일 서비스제공</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. 빠른 복사 및 초기화 액션 버튼 -->
+        <div class="picker-action-row" style="margin-top: 12px; display: flex; gap: 8px;">
+          <button type="button" class="btn-copy-note" id="btnCopyNote">📋 특이사항 복사</button>
+          <button type="button" class="btn-reset-note" id="btnResetNote" title="특이사항 초기화">🔄</button>
+        </div>
+      </div>
+
+      <!-- 슈퍼바이저 확인 가이드 카드 (가시성 및 폰트 확대 업그레이드) -->
+      <div class="guide-card">
+        <div class="guide-card-title" style="font-size: 14.5px; margin-bottom: 12px;">
+          <span>🔍</span> 슈퍼바이저 점검 가이드
+        </div>
+
+        <div class="guide-section-box">
+          <!-- 시간일치 블록 -->
+          <div class="guide-item-block">
+            <div class="guide-item-header">
+              <span class="guide-badge-blue">⏰ 시간일치</span>
+            </div>
+            <p class="guide-item-desc">
+              급여제공계획서에 작성되어 있는 <strong>시간대로 서비스가 제공되는지</strong> 확인합니다.
+            </p>
+          </div>
+
+          <!-- 특이사항 블록 -->
+          <div class="guide-item-block" style="margin-top: 10px;">
+            <div class="guide-item-header">
+              <span class="guide-badge-amber">📝 특이사항</span>
+            </div>
+            <ul class="guide-item-bullet-list">
+              <li>주별, 월별, 필요시 제공되는 서비스가 있을 경우 <strong>사유를 작성</strong>합니다.</li>
+              <li>급여제공계획서에 없는 서비스가 제공될 경우 <strong>사유를 작성</strong>합니다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- 👥 3. 우측 슬라이딩 제어 패널 (수급자 선택 및 관리 전용, 기존 APP/수기 버전과 100% 동일) -->
+  <div class="control-panel" id="controlPanel">
+    <!-- 토글 핸들 버튼 -->
+    <button class="control-panel-toggle" id="controlPanelToggle" title="수급자 관리 패널 열기/닫기">
+      <span class="toggle-arrow">◀</span>
+    </button>
+    <div class="recipient-widget">
+      <div class="control-panel-header">
+        <h3>👥 수급자 & 요양보호사 관리</h3>
+      </div>
+
+      <!-- 더블클릭 기입 기능 가이드 -->
+      <div
+        style="background: rgba(52, 152, 219, 0.08); padding: 10px; border-radius: 10px; border: 1px solid rgba(52, 152, 219, 0.2); margin-bottom: 4px;">
+        <span
+          style="font-size: 11px; color: #2980b9; line-height: 1.5; display: block; font-weight: bold; letter-spacing: -0.3px; white-space: normal;">
+          💡 <strong>더블클릭 꿀팁:</strong> 수급자 성명을 더블클릭하면 저장된 하루 표준 일정이 즉시 롱텀 서식에 자동 채워집니다!
+        </span>
+      </div>
+
+      <!-- 등록된 리스트 섹션 -->
+      <div class="recipient-list-section">
+        <h4 class="list-title">등록된 수급자 목록</h4>
+        <div class="search-box-wrap">
+          <input type="text" id="recipient-search" class="search-input" placeholder="🔍 수급자 성명 검색...">
+          <button id="btn-search-clear" class="btn-search-clear">×</button>
+        </div>
+
+        <!-- 👥/⏰ 정렬 선택 토글 스위치 -->
+        <div class="sort-toggle-wrap">
+          <button id="btn-sort-name" class="btn-sort active" title="공단 포털과 대조하기 편리한 이름(가나다)순으로 수급자 목록을 정렬합니다.">👥
+            이름순</button>
+          <button id="btn-sort-time" class="btn-sort" title="하루 일과 흐름을 보기 편리한 근무 시작시간 순서로 수급자 목록을 정렬합니다.">⏰ 시간순</button>
+        </div>
+
+        <div id="recipient-list-container" class="recipient-list">
+          <!-- JS에서 동적 생성 -->
+        </div>
+
+        <button id="btn-open-manage" class="btn-open-manage"
+          title="독립된 대시보드 창을 열어 수급자 일괄 등록, 정보 수정, 수급자 삭제 및 데이터 백업 작업을 편리하게 수행합니다.">
+          👥 수급자 정보 관리 / 신규 등록
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 연결 (공통 폴백 경로 포함) -->
+  <script src="../수기 급여제공기록지/js/recipients.js"></script>
+  <script src="js/recipients.js"></script>
+  <script src="js/longterm.js"></script>
+</body>
+
+</html>

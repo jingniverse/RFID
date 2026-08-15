@@ -187,8 +187,8 @@
     /* 카드 그리드 배치 */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
       width: 100%;
       box-sizing: border-box;
       animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
@@ -593,6 +593,19 @@
         </div>
         <div class="card-footer">
           <span class="launch-label">작성 화면 열기 ➔</span>
+        </div>
+      </a>
+
+      <!-- 🏛️ 롱텀 특정내역 수정 카드 (신규) -->
+      <a href="./LONGTERM/index.html" class="platform-card"
+        style="--glow-color: rgba(16, 185, 129, 0.15); --hover-border-color: rgba(16, 185, 129, 0.4); --hover-shadow-color: rgba(16, 185, 129, 0.12); --icon-bg: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); --action-color: #34d399;">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <div class="platform-icon-wrap">🏛️</div>
+          <h2>롱텀 특정내역 (LONGTERM)</h2>
+        </div>
+        <div class="card-footer">
+          <span class="launch-label">슈퍼바이저 확인용 열기 ➔</span>
         </div>
       </a>
 
