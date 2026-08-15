@@ -1,32 +1,39 @@
 {
-  "name": "rfid-smart-home-care",
-  "version": "1.5.1",
-  "description": "방문?양 급여?공기록지 ?마???합 ?브",
+  "name": "rfid-smart-care-hub",
+  "version": "1.6.0",
+  "description": "방문요양 급여제공기록지 & RFID 스마트 통합 관리 대시보드",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win"
+    "dist": "electron-builder --win portable"
   },
-  "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^26.15.2"
-  },
+  "keywords": [
+    "rfid",
+    "longterm",
+    "caregiver",
+    "dashboard"
+  ],
+  "author": "jingniverse",
+  "license": "MIT",
   "build": {
-    "appId": "com.rfid.smarthomecare",
-    "productName": "방문?양 급여기록지 ?마???합 ?브",
-    "directories": {
-      "output": "dist"
-    },
+    "appId": "com.jingniverse.rfidhub",
+    "productName": "RFID_HUB",
     "win": {
-      "target": [
-        "portable"
-      ],
-      "icon": "rfid_icon.png",
-      "artifactName": "RFID_v${version}.${ext}"
+      "target": "portable"
+    },
+    "portable": {
+      "artifactName": "RFID_HUB_v1.6.0.exe"
     },
     "files": [
       "**/*",
-      "!dist"
+      "!dist/**",
+      "!build_app/**",
+      "!node_modules/**"
     ]
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3"
   }
 }

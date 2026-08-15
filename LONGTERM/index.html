@@ -4,26 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>장기요양급여 제공기록지 (롱텀 특정내역 수정)</title>
+  <title>장기요양급여 제공기록지 (롱텀 RFID 수정)</title>
   <link rel="icon" href="../favicon.png" type="image/png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-  <!-- 🔄 1. 좌측 상단 버전 전환 및 설명서 플로팅 버튼군 (인쇄 시 자동 숨김) -->
+  <!-- 🔄 1. 좌측 상단 플로팅 버전 전환 버튼군 -->
   <div class="version-switch-floating">
+    <a href="../index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+      🏠 메인 홈으로 이동
+    </a>
     <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver purple">
       📱 RFID APP형 화면으로 전환
     </a>
     <a href="../수기 급여제공기록지/[수기급여제공기록지].html" class="btn-switch-ver">
       📝 수기 급여제공기록지 화면으로 전환
     </a>
-    <button
-      onclick="window.open('../통합_사용_설명서.html', 'manualPopup', 'width=800,height=900,scrollbars=yes,resizable=yes');"
-      class="btn-switch-ver">
-      📖 사용 설명서
-    </button>
   </div>
 
   <!-- 🏛️ 2. 메인 워크스페이스 (중앙 롱텀 팝업창 + 측면 상용구 가이드) -->
@@ -32,9 +30,17 @@
     <!-- 롱텀 1:1 정밀 팝업 윈도우 -->
     <div class="longterm-window">
 
-      <!-- 윈도우 헤더 타이틀바 -->
+      <!-- 윈도우 헤더 타이틀바 (PiP 버튼 및 닫기 버튼 탑재) -->
       <div class="lt-titlebar">
         <span class="lt-title-text">롱텀 일일 RFID 점검</span>
+        <div class="lt-titlebar-actions">
+          <button type="button" class="btn-pip-titlebar" id="btnOpenPiP" title="공단 사이트 위에 항상 띄워두고 대조하기 (Always-on-top PiP 모드)">
+            📌 PiP 모드
+          </button>
+          <button type="button" class="btn-pip-close" id="btnPipClose" style="display: none;" title="PiP 창 닫기">
+            ✕
+          </button>
+        </div>
       </div>
 
       <!-- 윈도우 본문 -->
