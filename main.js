@@ -1,17 +1,22 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-let mainWindow;
+let mainWindow = null;
+let tray = null;
+let isQuitting = false;
 
 function createWindow() {
+  const iconPath = path.join(__dirname, 'rfid_icon.png');
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 880,
     minWidth: 1000,
     minHeight: 700,
     title: '방문요양 급여제공기록지 & RFID 스마트 통합 관리 시스템',
-    icon: path.join(__dirname, 'icon.png'),
+    icon: iconPath,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -22,8 +27,52 @@ function createWindow() {
   // 통합 허브 메인 대시보드 로드
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
+  // 닫기 버튼 클릭 시 트레이로 숨김 (종료 방지)
+  mainWindow.on('close', function (event) {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+      return false;
+    }
+  });
+
   mainWindow.on('closed', function () {
     mainWindow = null;
+  });
+}
+
+function createTray() {
+  const trayIconPath = path.join(__dirname, 'tray_icon.png');
+  tray = new Tray(trayIconPath);
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '🏠 메인 대시보드 열기',
+      click: function () {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: '🚪 프로그램 완전 종료',
+      click: function () {
+        isQuitting = true;
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setToolTip('RFID 스마트 통합 관리 시스템');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('double-click', function () {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
 }
 
@@ -61,7 +110,14 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
   }
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  createTray();
+});
+
+app.on('before-quit', function () {
+  isQuitting = true;
+});
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
@@ -72,5 +128,7 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
   if (mainWindow === null) {
     createWindow();
+  } else {
+    mainWindow.show();
   }
 });

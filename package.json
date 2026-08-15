@@ -19,7 +19,8 @@
     "appId": "com.jingniverse.rfidhub",
     "productName": "RFID_HUB",
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "rfid_icon.png"
     },
     "portable": {
       "artifactName": "RFID_HUB_v1.6.0.exe"
