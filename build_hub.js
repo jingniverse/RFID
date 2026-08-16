@@ -32,14 +32,12 @@ try {
     fs.mkdirSync(distDir, { recursive: true });
   }
 
-  const generatedExe = path.join(tmpBuildDir, 'RFID_HUB_v1.8.0.exe');
-  const targetExe = path.join(distDir, 'RFID_HUB_v1.8.0.exe');
-  const targetLegacyExe = path.join(distDir, 'RFID_v1.8.0.exe');
+  const generatedExe = path.join(tmpBuildDir, 'RFID_v1.8.0.exe');
+  const targetExe = path.join(distDir, 'RFID_v1.8.0.exe');
 
   if (fs.existsSync(generatedExe)) {
     fs.copyFileSync(generatedExe, targetExe);
-    fs.copyFileSync(generatedExe, targetLegacyExe);
-    console.log(`✅ 성공: ${targetExe} 및 ${targetLegacyExe} 생성 완료!`);
+    console.log(`✅ 성공: ${targetExe} 생성 완료!`);
   }
 
   // 4-1. dist 폴더에 루트 최신 recipients.js 항상 강제 동기화

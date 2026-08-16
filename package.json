@@ -28,7 +28,7 @@
       "icon": "assets/rfid_icon.png"
     },
     "portable": {
-      "artifactName": "RFID_HUB_v1.8.0.exe"
+      "artifactName": "RFID_v${version}.${ext}"
     },
     "asar": true,
     "files": [
