@@ -25,10 +25,12 @@
     "npmRebuild": false,
     "win": {
       "target": "portable",
-      "icon": "assets/rfid_icon.png"
+      "icon": "assets/rfid_icon.png",
+      "requestedExecutionLevel": "asInvoker"
     },
     "portable": {
-      "artifactName": "RFID_v${version}.${ext}"
+      "artifactName": "RFID_v${version}.${ext}",
+      "requestExecutionLevel": "user"
     },
     "asar": true,
     "files": [
