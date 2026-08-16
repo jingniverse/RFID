@@ -759,14 +759,14 @@
           <details class="release-item" open>
             <summary class="release-header">
               <span class="version-tag" style="background-color: #6366f1; color: white;">v1.8.0</span>
-              <span class="release-title">롱텀 PiP 모드 다중 뱃지 연동 및 가족/교대구분 상호 배타적 단일 선택 탑재</span>
+              <span class="release-title">롱텀 작은창(PiP) 이름표 표시 및 가족/오전·오후 선택 편의 개선</span>
               <span class="release-date">2026.08.16</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>📌 롱텀 PiP 모드 다중 뱃지(가족/오전/오후/치매) 연동</strong>: 공단 화면 위에 띄우는 PiP 미러링 위젯 창에서도 가족(보라), 1교대/오전(하늘), 2교대/오후(주황) 뱃지가 실시간으로 노출되며, 치매(노랑) 뱃지가 최후순위로 깔끔하게 정렬됩니다.</li>
-                <li><strong>🛡️ 가족요양 및 근무구분(오전/오후) 상호 배타적 연동</strong>: 공단 제도(일반요양과 가족요양 분리 제공)에 맞춰, 관리자 창에서 가족요양 체크 시 오전/오후가 자동 해제되고 오전/오후 체크 시 가족요양이 자동 해제되는 지능형 단일 선택 토글을 적용했습니다.</li>
-                <li><strong>🛑 보류(status/isPending) 속성 영구 보존 및 목록 숨김 복원</strong>: 수급자 파일 저장 시 보류 속성이 100% 보존되도록 파일 입출력 로직을 강화하여, 일반 화면 자동 숨김 및 관리자 창 회색 딤드/빨간 뱃지 표시가 완벽하게 유지됩니다.</li>
+                <li><strong>📌 롱텀 작은창(PiP 위젯)에서도 이름표(뱃지) 확인</strong>: 공단 화면 위에 띄워놓고 보는 작은 창에서도 수급자 이름 옆에 보라색 <strong>[가족]</strong>, 파란색 <strong>[오전]</strong>, 주황색 <strong>[오후]</strong> 이름표가 똑같이 잘 보여서 대조하기가 훨씬 편리해졌습니다.</li>
+                <li><strong>🛡️ 가족요양과 오전·오후 중복 선택 자동 방지</strong>: 가족요양은 일반 요양과 같은 날에 함께 할 수 없으므로, 관리자 창에서 '가족요양'을 누르면 '오전/오후'가 자동으로 꺼지고, '오전/오후'를 누르면 '가족요양'이 자동으로 꺼지도록 똑똑하게 바뀌어 실수를 막아줍니다.</li>
+                <li><strong>🛑 서비스 일시 중단(보류) 수급자 숨김 안정화</strong>: 병원 입원 등으로 서비스를 잠시 멈춘 '보류' 수급자를 관리자 창에서 체크해 두면, 일상 작성 화면 목록에서는 깔끔하게 감춰지고 관리자 창에서만 빨간색 <strong>[보류]</strong> 표시로 안전하게 관리됩니다.</li>
               </ul>
             </div>
           </details>
@@ -775,14 +775,13 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #8b5cf6; color: white;">v1.7.0</span>
-              <span class="release-title">단일 마스터 원본 관리 아키텍처 개편 및 가족요양(60/90분) 자동 판정 복원</span>
+              <span class="release-title">수급자 데이터 파일 하나로 통합 및 가족요양 시간(60/90분) 자동 인식</span>
               <span class="release-date">2026.08.16</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>🔄 단일 마스터 데이터(Single Source of Truth) 일원화</strong>: 하위 폴더별로 분산되어 충돌을 일으키던 중복 파일들을 정리하고, 루트 폴더의 단 1개 <code>recipients.js</code>만 모든 웹/EXE 모듈이 실시간으로 바라보도록 아키텍처를 전면 개편했습니다.</li>
-                <li><strong>💜 과거 가족요양(60분/90분) 수급자 자동 판정</strong>: 플래그 유무와 무관하게 총시간이 60분/90분으로 등록된 모든 수급자에게 가족 뱃지 및 수정 폼 체크박스가 자동으로 복원되도록 하위 호환성을 완벽 보장했습니다.</li>
-                <li><strong>⚡ 실시간 최신 파일 우선 로드</strong>: 타임스탬프 기반 최신 파일 감지 로직을 탑재하여 브라우저 로컬 캐시와의 충돌을 원천 차단했습니다.</li>
+                <li><strong>🔄 수급자 정보 파일 1개로 완전 일원화</strong>: 여러 폴더에 흩어져 있던 수급자 파일들을 프로그램 바로 옆 <code>recipients.js</code> 단 1개로 합쳤습니다. 이제 이 파일 하나만 수정하거나 백업해 두면 APP형, 수기형, 롱텀형 모든 화면에 한 번에 똑같이 적용됩니다.</li>
+                <li><strong>💜 60분/90분 가족요양 일정 자동 복원</strong>: 예전에 등록해 두셨던 60분 또는 90분 가족요양 어르신들도 프로그램이 시간을 자동으로 알아채고 보라색 <strong>[가족]</strong> 이름표와 전용 체크박스를 알아서 띄워줍니다.</li>
               </ul>
             </div>
           </details>
