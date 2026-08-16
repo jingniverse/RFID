@@ -71,6 +71,7 @@ function getTodayDateString() {
  * 문서 로드 시 초기화
  */
 document.addEventListener("DOMContentLoaded", function () {
+  setupTheme();
   loadData();
   setupControlPanel();
   setupFormEventListeners();
@@ -79,36 +80,119 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /**
- * 1. 수급자 데이터 로드 (localStorage 우선, 없거나 구버전이면 INITIAL_RECIPIENTS 사용)
+ * 0. 다크/라이트 테마 제어 및 실시간 동기화
  */
-function loadData() {
-  var savedData = localStorage.getItem("rfid_recipients_data");
-  if (savedData) {
-    try {
-      currentRecipients = JSON.parse(savedData);
-      // 만약 저장된 데이터가 2명 이하인 구버전이면 최신 6명 데이터로 자동 갱신
-      if (Array.isArray(currentRecipients) && currentRecipients.length < 6 && typeof INITIAL_RECIPIENTS !== "undefined") {
-        currentRecipients = INITIAL_RECIPIENTS;
-        localStorage.setItem("rfid_recipients_data", JSON.stringify(INITIAL_RECIPIENTS));
-      }
-    } catch (e) {
-      console.warn("로컬스토리지 파싱 실패, 기본값 사용:", e);
-      currentRecipients = typeof INITIAL_RECIPIENTS !== "undefined" ? INITIAL_RECIPIENTS : [];
+function setupTheme() {
+  var btnTheme = document.getElementById("btnThemeToggle");
+  function updateThemeUI() {
+    var isDark = document.body.classList.contains("dark-theme");
+    if (btnTheme) {
+      var icon = btnTheme.querySelector(".theme-icon") || btnTheme;
+      icon.innerHTML = isDark ? "☀️" : "🌙";
     }
-  } else if (typeof INITIAL_RECIPIENTS !== "undefined") {
-    currentRecipients = INITIAL_RECIPIENTS;
-    localStorage.setItem("rfid_recipients_data", JSON.stringify(INITIAL_RECIPIENTS));
+  }
+
+  var savedTheme = localStorage.getItem("hub-theme") || "light";
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-theme");
   } else {
-    currentRecipients = [];
+    document.body.classList.remove("dark-theme");
+  }
+  updateThemeUI();
+
+  if (btnTheme) {
+    btnTheme.addEventListener("click", function () {
+      var isDark = document.body.classList.toggle("dark-theme");
+      localStorage.setItem("hub-theme", isDark ? "dark" : "light");
+      updateThemeUI();
+    });
+  }
+
+  window.addEventListener("storage", function (e) {
+    if (e.key === "hub-theme") {
+      if (e.newValue === "dark") {
+        document.body.classList.add("dark-theme");
+      } else {
+        document.body.classList.remove("dark-theme");
+      }
+      updateThemeUI();
+    }
+  });
+}
+
+/**
+ * 1. 수급자 데이터 로드 (API 우선 -> localStorage -> INITIAL_RECIPIENTS)
+ */
+async function loadData() {
+  try {
+    let initialList = [];
+    let fileTimestamp = typeof INITIAL_RECIPIENTS_TIMESTAMP !== 'undefined' ? INITIAL_RECIPIENTS_TIMESTAMP : 0;
+    const storedTimestamp = parseInt(localStorage.getItem('rfid_recipients_timestamp') || '0', 10);
+
+    // 🌐 1단계: Electron 서버 환경인 경우 API를 통해 최신 recipients.js 실시간 로드
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        const res = await fetch('/api/load-recipients', { cache: 'no-store' });
+        if (res.ok) {
+          const apiRecipients = await res.json();
+          if (Array.isArray(apiRecipients) && apiRecipients.length > 0) {
+            initialList = apiRecipients;
+          }
+        }
+      } catch (e) {
+        console.warn('롱텀 API 로드 실패, 로컬 스토리지/파일 폴백 사용:', e);
+      }
+    }
+
+    // 📄 2단계: 파일 타임스탬프가 로컬스토리지보다 최신이거나 파일에 데이터가 있을 때 최신 파일 우선 로드
+    if (initialList.length === 0 && typeof INITIAL_RECIPIENTS !== 'undefined' && Array.isArray(INITIAL_RECIPIENTS)) {
+      if (fileTimestamp > storedTimestamp || !localStorage.getItem('rfid_recipients')) {
+        initialList = [...INITIAL_RECIPIENTS];
+        localStorage.setItem('rfid_recipients', JSON.stringify(initialList));
+        localStorage.setItem('rfid_recipients_timestamp', fileTimestamp);
+      }
+    }
+
+    // 💾 3단계: 로컬 스토리지 폴백
+    if (initialList.length === 0) {
+      const saved = localStorage.getItem('rfid_recipients') || localStorage.getItem('rfid_recipients_data');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            initialList = parsed;
+          }
+        } catch (e) {}
+      }
+    }
+
+    // 📄 4단계: 여전히 비어있다면 recipients.js 전역 객체 사용
+    if (initialList.length === 0 && typeof INITIAL_RECIPIENTS !== 'undefined') {
+      initialList = [...INITIAL_RECIPIENTS];
+    }
+
+    currentRecipients = initialList;
+    localStorage.setItem('rfid_recipients', JSON.stringify(currentRecipients));
+
+  } catch (e) {
+    console.error('롱텀 데이터 로드 중 오류 발생:', e);
+    currentRecipients = typeof INITIAL_RECIPIENTS !== 'undefined' ? [...INITIAL_RECIPIENTS] : [];
   }
 
   renderRecipientList();
 
-  // 첫 번째 수급자로 자동 폼 로드
-  if (currentRecipients.length > 0) {
-    selectRecipient(currentRecipients[0]);
-  }
+  // 오늘 실시간 날짜 기본 세팅 (수급자 선택 대기)
+  var todayStr = getTodayDateString();
+  var elDate = getDocElem("ltServiceDate");
+  if (elDate) elDate.textContent = todayStr;
 }
+
+// 🌟 관리자 대시보드에서 수급자 변경 시 롱텀 화면도 실시간 자동 갱신
+window.addEventListener('storage', function (e) {
+  if (e.key === 'rfid_recipients' || e.key === 'rfid_recipients_data' || !e.key) {
+    loadData();
+  }
+});
 
 /**
  * 2. 수급자 슬라이딩 제어 패널(드로어, 검색, 정렬, 관리자창) 이벤트 바인딩
@@ -176,7 +260,7 @@ function setupControlPanel() {
   var btnOpenManage = document.getElementById("btn-open-manage");
   if (btnOpenManage) {
     btnOpenManage.addEventListener("click", function () {
-      var manageUrl = "../수기 급여제공기록지/[관리자] 수급자 등록 및 변경하기.html";
+      var manageUrl = "../[관리자] 수급자 등록 및 변경하기.html";
       var popup = window.open(manageUrl, "manageRecipientPopup", "width=1200,height=850,scrollbars=yes,resizable=yes");
       if (!popup || popup.closed || typeof popup.closed == "undefined") {
         alert("팝업 차단이 감지되었습니다. 팝업 허용 후 다시 시도해 주세요.");
@@ -202,8 +286,12 @@ function renderRecipientList() {
 
   listContainer.innerHTML = "";
 
-  // 1) 검색 필터링
+  // 1) 보류/대기 인원 제외 및 검색 필터링
   var filtered = currentRecipients.filter(function (r) {
+    // 🛑 보류/대기 수급자는 실시간 패널에서 필터링하여 숨김
+    var status = r.status || (r.isPending ? '보류' : (r.isWaiting ? '대기' : '정상'));
+    if (status === '보류' || status === '대기' || r.isPending || r.isWaiting) return false;
+
     if (!currentSearchQuery) return true;
     var name = (r.name || "").toLowerCase();
     var caregiver = (r.caregiver || "").toLowerCase();
@@ -232,16 +320,54 @@ function renderRecipientList() {
     var row = document.createElement("div");
     row.className = "recipient-row" + (selectedRecipientId === rec.id ? " selected" : "");
 
-    var isDementiaBadge = rec.isDementia ? '<span class="badge-dementia">치매</span>' : '';
-    var gradeBadge = '<span class="row-grade">' + (rec.grade ? rec.grade + '등급' : '등급없음') + '</span>';
-    var birthText = rec.birth ? '<span class="row-birth">' + rec.birth + '</span>' : '';
+    // 성별 표시
+    var genderHtml = rec.gender ? '<span style="font-size: 12px; color: ' + (rec.gender === '남' ? '#2563eb' : '#ec4899') + '; font-weight: bold; margin-left: 2px;">(' + rec.gender + ')</span>' : '';
+
+    // 등급 뱃지
+    var gradeBadge = rec.grade ? '<span class="row-grade" style="font-size: 11px; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 6px; font-weight: bold; margin-left: 4px;">' + rec.grade + '등급</span>' : '';
+
+    // 생년월일 및 인정번호 메타 정보
+    var birthText = rec.birth ? '<span style="color: #94a3b8; margin: 0 3px;">·</span><span style="color: #64748b; font-size: 11.5px;">' + rec.birth + '</span>' : '';
+    var certText = rec.cert ? '<span style="color: #94a3b8; margin: 0 3px;">·</span><span style="color: #334155; font-size: 11.5px; font-weight: 500;">' + rec.cert + '</span>' : '';
+
+    // 🏷️ 우측 뱃지 영역 (가족 / 오전 / 오후)
+    var badgesHtml = '';
+
+    // 1. 가족요양 뱃지 (하위 호환 및 60분/90분 자동 판정)
+    var t = rec.template || {};
+    var totMin = String((t && t.totalTime) ? t.totalTime : '').trim();
+    var isFam = rec.familyCareType === '60' || rec.familyCareType === '90' || 
+                t.familyCare === '60' || t.familyCare === '90' || 
+                t.familyCareType === '60' || t.familyCareType === '90' || 
+                rec.isFamilyCare || rec.familyCare || t.isFamilyCare || t.familyCare ||
+                totMin === '60' || totMin === '90';
+    if (isFam) {
+      badgesHtml += '<span style="font-size: 11px; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 6px; font-weight: bold;">가족</span>';
+    }
+
+    // 2. 근무 구분(오전/오후) 뱃지 (하위 호환)
+    var shiftVal = String(rec.shift || rec.shiftType || t.shift || t.shiftType || '').trim();
+    if (shiftVal === '오전' || shiftVal === '1교대' || shiftVal === '1' || shiftVal.toLowerCase() === 'morning') {
+      badgesHtml += '<span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 6px; font-weight: bold;">오전</span>';
+    } else if (shiftVal === '오후' || shiftVal === '2교대' || shiftVal === '2' || shiftVal.toLowerCase() === 'afternoon') {
+      badgesHtml += '<span style="font-size: 11px; background: #ffedd5; color: #ea580c; padding: 2px 6px; border-radius: 6px; font-weight: bold;">오후</span>';
+    }
+
+    // 3. 치매 뱃지 (보조)
+    if (rec.isDementia && !isFam) {
+      badgesHtml += '<span style="font-size: 11px; background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 6px; font-weight: bold;">치매</span>';
+    }
 
     row.innerHTML =
-      '<div class="row-info-wrap">' +
-      '<span class="row-name">' + (rec.name || "무명") + '</span>' +
-      isDementiaBadge +
-      gradeBadge +
-      birthText +
+      '<div class="row-info-wrap" style="display: flex; align-items: center; gap: 2px; flex: 1; overflow: hidden; white-space: nowrap;">' +
+        '<span class="row-name" style="font-weight: bold; color: #0f172a; font-size: 13px;">' + (rec.name || "무명") + '</span>' +
+        genderHtml +
+        gradeBadge +
+        birthText +
+        certText +
+      '</div>' +
+      '<div class="row-badges-wrap" style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">' +
+        badgesHtml +
       '</div>';
 
     // 클릭 / 더블클릭 이벤트
@@ -277,9 +403,37 @@ function selectRecipient(rec) {
     targetDocs.push(pipWindowInstance.document);
   }
 
+  // 3) 수급자명, 요양요원명, 서비스일자(실시간 오늘 날짜) 1:1 바인딩
+  var todayStr = getTodayDateString();
   var tpl = rec.template || {};
-  var totalMinutes = parseInt(tpl.totalTime, 10) || 180;
+  var totalMinutes = parseInt(tpl.totalTime, 10) || 0;
 
+  targetDocs.forEach(function (doc) {
+    var elRecName = doc.getElementById("ltRecipientName");
+    if (elRecName) {
+      elRecName.textContent = rec.name || "-";
+      elRecName.style.color = "#0f172a";
+      elRecName.style.fontWeight = "bold";
+    }
+
+    var elCaregiver = doc.getElementById("ltCaregiverName");
+    if (elCaregiver) {
+      elCaregiver.textContent = rec.caregiver || "-";
+      elCaregiver.style.color = "#0f172a";
+    }
+
+    var elDate = doc.getElementById("ltServiceDate");
+    if (elDate) elDate.textContent = todayStr;
+
+    // 총시간 표시 및 dataset.total 갱신
+    var elTotal = doc.getElementById("ltTotalTimeDisplay");
+    if (elTotal) {
+      elTotal.textContent = "(총시간 : " + totalMinutes + "분)";
+      elTotal.dataset.total = totalMinutes;
+    }
+  });
+
+  // 4) 6대 요양 시간: 수급자 템플릿에 저장된 실제 시간 그대로 100% 충실 바인딩
   var sMin = Array.isArray(tpl.serviceMinutes) ? tpl.serviceMinutes : ["", "", "", "", "", ""];
   var physical = parseInt(sMin[0], 10) || 0;
   var cognitiveStim = parseInt(sMin[1], 10) || 0;
@@ -288,34 +442,25 @@ function selectRecipient(rec) {
   var emotional = parseInt(sMin[4], 10) || 0;
   var household = parseInt(sMin[5], 10) || 0;
 
-  if (physical === 0 && cognitiveStim === 0 && dailyTogether === 0 && cognitiveBehavior === 0 && emotional === 0 && household === 0) {
-    if (totalMinutes >= 180) {
-      physical = 60; emotional = 30; household = totalMinutes - 90;
-    } else if (totalMinutes >= 120) {
-      physical = 60; emotional = 20; household = totalMinutes - 80;
-    } else {
-      physical = Math.floor(totalMinutes * 0.6);
-      household = totalMinutes - physical;
-    }
-  }
+  targetDocs.forEach(function (doc) {
+    var elPhysical = doc.getElementById("timePhysical");
+    if (elPhysical) elPhysical.value = pad3(physical);
 
-  var elPhysical = getDocElem("timePhysical");
-  if (elPhysical) elPhysical.value = pad3(physical);
+    var elCogStim = doc.getElementById("timeCogStim");
+    if (elCogStim) elCogStim.value = pad3(cognitiveStim);
 
-  var elCogStim = getDocElem("timeCogStim");
-  if (elCogStim) elCogStim.value = pad3(cognitiveStim);
+    var elDailyTogether = doc.getElementById("timeDailyTogether");
+    if (elDailyTogether) elDailyTogether.value = pad3(dailyTogether);
 
-  var elDailyTogether = getDocElem("timeDailyTogether");
-  if (elDailyTogether) elDailyTogether.value = pad3(dailyTogether);
+    var elCogBehavior = doc.getElementById("timeCogBehavior");
+    if (elCogBehavior) elCogBehavior.value = pad3(cognitiveBehavior);
 
-  var elCogBehavior = getDocElem("timeCogBehavior");
-  if (elCogBehavior) elCogBehavior.value = pad3(cognitiveBehavior);
+    var elEmotional = doc.getElementById("timeEmotional");
+    if (elEmotional) elEmotional.value = pad3(emotional);
 
-  var elEmotional = getDocElem("timeEmotional");
-  if (elEmotional) elEmotional.value = pad3(emotional);
-
-  var elHousehold = getDocElem("timeHousehold");
-  if (elHousehold) elHousehold.value = pad3(household);
+    var elHousehold = doc.getElementById("timeHousehold");
+    if (elHousehold) elHousehold.value = pad3(household);
+  });
 
   recalculateTimes();
 
@@ -385,26 +530,40 @@ function recalculateTimes() {
 
   var enteredTotal = t1 + t2 + t3 + t4 + t5 + t6;
   var totalLimitElem = getDocElem("ltTotalTimeDisplay");
-  var totalLimit = totalLimitElem ? (parseInt(totalLimitElem.dataset.total, 10) || 180) : 180;
+  var totalLimit = totalLimitElem ? (parseInt(totalLimitElem.dataset.total, 10) || 0) : 0;
 
-  var remain = totalLimit - enteredTotal;
+  var remain = totalLimit > 0 ? (totalLimit - enteredTotal) : 0;
 
-  var elEntered = getDocElem("displayEnteredTime");
-  if (elEntered) elEntered.textContent = "입력시간 : " + enteredTotal + "분";
-
-  var remainElem = getDocElem("displayRemainTime");
-  if (remainElem) {
-    remainElem.textContent = "잔여시간 : " + remain + "분";
-    if (remain === 0) {
-      remainElem.style.color = "#ff0000";
-      remainElem.style.fontWeight = "bold";
-    } else if (remain < 0) {
-      remainElem.textContent = "초과시간 : " + Math.abs(remain) + "분";
-      remainElem.style.color = "#c0392b";
-    } else {
-      remainElem.style.color = "#d35400";
-    }
+  var targetDocs = [document];
+  if (pipWindowInstance && pipWindowInstance.document) {
+    targetDocs.push(pipWindowInstance.document);
   }
+
+  targetDocs.forEach(function (doc) {
+    var elEntered = doc.getElementById("displayEnteredTime");
+    if (elEntered) elEntered.textContent = "입력시간 : " + enteredTotal + "분";
+
+    var remainElem = doc.getElementById("displayRemainTime");
+    if (remainElem) {
+      if (totalLimit === 0) {
+        remainElem.textContent = "잔여시간 : 0분";
+        remainElem.style.color = "#64748b";
+        remainElem.style.fontWeight = "normal";
+      } else if (remain === 0) {
+        remainElem.textContent = "잔여시간 : 0분";
+        remainElem.style.color = "#ff0000";
+        remainElem.style.fontWeight = "bold";
+      } else if (remain < 0) {
+        remainElem.textContent = "초과시간 : " + Math.abs(remain) + "분";
+        remainElem.style.color = "#c0392b";
+        remainElem.style.fontWeight = "bold";
+      } else {
+        remainElem.textContent = "잔여시간 : " + remain + "분";
+        remainElem.style.color = "#d35400";
+        remainElem.style.fontWeight = "bold";
+      }
+    }
+  });
 }
 
 /**
@@ -724,6 +883,21 @@ function setupPiPMode() {
           background: #cbd5e1;
           border-radius: 3px;
         }
+
+        .pip-recipient-section-wrap .recipient-row {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 6px 8px !important;
+          gap: 6px !important;
+        }
+
+        .pip-recipient-section-wrap .row-badges-wrap {
+          display: flex !important;
+          align-items: center !important;
+          gap: 3px !important;
+          flex-shrink: 0 !important;
+        }
       `;
       pipWindow.document.head.appendChild(pipCustomStyle);
 
@@ -775,7 +949,11 @@ function setupPiPMode() {
       function renderPipRecipients() {
         listContainer.innerHTML = "";
 
-        var list = currentRecipients.slice();
+        var list = currentRecipients.filter(function (r) {
+          var status = r.status || (r.isPending ? '보류' : (r.isWaiting ? '대기' : '정상'));
+          if (status === '보류' || status === '대기' || r.isPending || r.isWaiting) return false;
+          return true;
+        });
         list.sort(function (a, b) {
           if (currentSortMode === "name") {
             return (a.name || "").localeCompare(b.name || "", "ko");
@@ -790,16 +968,46 @@ function setupPiPMode() {
           var row = pipWindow.document.createElement("div");
           row.className = "recipient-row" + (rec.id === selectedRecipientId ? " selected" : "");
 
-          var isDementiaBadge = rec.isDementia ? '<span class="badge-dementia">치매</span>' : '';
-          var gradeBadge = '<span class="row-grade">' + (rec.grade ? rec.grade + '등급' : '등급없음') + '</span>';
-          var birthText = rec.birth ? '<span class="row-birth">' + rec.birth + '</span>' : '';
+          // 성별 표시
+          var genderHtml = rec.gender ? '<span style="font-size: 11px; color: ' + (rec.gender === '남' ? '#2563eb' : '#ec4899') + '; font-weight: bold; margin-left: 1px;">(' + rec.gender + ')</span>' : '';
+          var gradeBadge = rec.grade ? '<span class="row-grade" style="font-size: 10.5px; background: #f1f5f9; color: #475569; padding: 1px 4px; border-radius: 4px; font-weight: bold; margin-left: 2px;">' + rec.grade + '등급</span>' : '';
+
+          // 🏷️ 뱃지 생성 (우선순위: 1. 가족 -> 2. 오전/오후 -> 3. 치매)
+          var badgesHtml = '';
+
+          // 1. 가족요양 뱃지 (60분/90분 자동 판정 포함)
+          var t = rec.template || {};
+          var totMin = String((t && t.totalTime) ? t.totalTime : '').trim();
+          var isFam = rec.familyCareType === '60' || rec.familyCareType === '90' || 
+                      t.familyCare === '60' || t.familyCare === '90' || 
+                      t.familyCareType === '60' || t.familyCareType === '90' || 
+                      rec.isFamilyCare || rec.familyCare || t.isFamilyCare || t.familyCare ||
+                      totMin === '60' || totMin === '90';
+          if (isFam) {
+            badgesHtml += '<span class="badge-family" style="font-size: 10px; background: #f3e8ff; color: #7e22ce; padding: 2px 5px; border-radius: 4px; font-weight: bold; flex-shrink: 0;">가족</span>';
+          }
+
+          // 2. 근무 구분(오전/오후) 뱃지
+          var shiftVal = String(rec.shift || rec.shiftType || t.shift || t.shiftType || '').trim();
+          if (shiftVal === '오전' || shiftVal === '1교대' || shiftVal === '1' || shiftVal.toLowerCase() === 'morning') {
+            badgesHtml += '<span class="badge-shift-morning" style="font-size: 10px; background: #e0f2fe; color: #0284c7; padding: 2px 5px; border-radius: 4px; font-weight: bold; flex-shrink: 0;">오전</span>';
+          } else if (shiftVal === '오후' || shiftVal === '2교대' || shiftVal === '2' || shiftVal.toLowerCase() === 'afternoon') {
+            badgesHtml += '<span class="badge-shift-afternoon" style="font-size: 10px; background: #ffedd5; color: #ea580c; padding: 2px 5px; border-radius: 4px; font-weight: bold; flex-shrink: 0;">오후</span>';
+          }
+
+          // 3. 치매 뱃지 (우선순위 가장 마지막)
+          if (rec.isDementia) {
+            badgesHtml += '<span class="badge-dementia" style="font-size: 10px; background: #fef3c7; color: #d97706; padding: 2px 5px; border-radius: 4px; font-weight: bold; flex-shrink: 0;">치매</span>';
+          }
 
           row.innerHTML =
-            '<div class="row-info-wrap">' +
-            '<span class="row-name">' + (rec.name || "무명") + '</span>' +
-            isDementiaBadge +
-            gradeBadge +
-            birthText +
+            '<div class="row-info-wrap" style="display: flex; align-items: center; gap: 2px; flex: 1; overflow: hidden; white-space: nowrap;">' +
+              '<span class="row-name" style="font-weight: bold; color: #0f172a; font-size: 12.5px;">' + (rec.name || "무명") + '</span>' +
+              genderHtml +
+              gradeBadge +
+            '</div>' +
+            '<div class="row-badges-wrap" style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;">' +
+              badgesHtml +
             '</div>';
 
           row.addEventListener("click", function () {

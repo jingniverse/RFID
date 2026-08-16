@@ -1,4 +1,4 @@
-const { app, Tray, Menu, shell, dialog } = require('electron');
+const { app, Tray, Menu, shell, dialog, nativeImage } = require('electron');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -25,22 +25,44 @@ if (!gotTheLock) {
   // 🌟 수급자 데이터 파일 경로 결정 함수 (포터블 EXE 실제 위치 100% 탐색)
   function getRecipientsPath() {
     if (app.isPackaged) {
-      // 💡 electron-builder 포터블 환경에서는 PORTABLE_EXECUTABLE_DIR가 실제 exe 폴더를 가리킴
-      const exeDir = process.env.PORTABLE_EXECUTABLE_DIR || path.dirname(app.getPath('exe'));
-      const externalPath = path.join(exeDir, 'recipients.js');
-      
-      // 만약 외부 실행 폴더에 recipients.js가 아직 없다면 내부 기본 템플릿을 복사 생성
-      if (!fs.existsSync(externalPath)) {
-        try {
-          const internalPath = path.join(__dirname, 'recipients.js');
-          if (fs.existsSync(internalPath)) {
-            fs.copyFileSync(internalPath, externalPath);
-          }
-        } catch (e) {
-          console.error("기본 recipients.js 외부 복사 실패:", e);
+      // 💡 1순위: electron-builder 포터블 환경의 실제 exe 실행 폴더
+      // 💡 2순위: 현재 실행 프로세스 디렉토리
+      // 💡 3순위: app.getPath('exe') 폴더
+      const candidateDirs = [
+        process.env.PORTABLE_EXECUTABLE_DIR,
+        process.cwd(),
+        path.dirname(app.getPath('exe'))
+      ].filter(Boolean);
+
+      for (const dir of candidateDirs) {
+        const candidateFile = path.join(dir, 'recipients.js');
+        if (fs.existsSync(candidateFile)) {
+          return candidateFile;
         }
       }
-      return externalPath;
+
+      // 만약 어디에도 없다면 1순위 폴더에 기본 recipients.js 파일 생성
+      const primaryDir = candidateDirs[0] || process.cwd();
+      const targetPath = path.join(primaryDir, 'recipients.js');
+      try {
+        const defaultContent = `/**
+ * 수급자 & 요양보호사 고정 목록 설정 파일 (recipients.js)
+ */
+
+if (typeof INITIAL_RECIPIENTS === 'undefined') {
+  var INITIAL_RECIPIENTS_TIMESTAMP = ${Date.now()};
+
+  var INITIAL_RECIPIENTS = [];
+
+  var INITIAL_CENTER_NAME = "사랑방문요양센터";
+  var INITIAL_CENTER_CODE = "1234567890";
+}
+`;
+        fs.writeFileSync(targetPath, defaultContent, 'utf-8');
+      } catch (e) {
+        console.error("기본 recipients.js 파일 생성 실패:", e);
+      }
+      return targetPath;
     } else {
       // 개발 환경 (VS Code 등)
       return path.join(__dirname, 'recipients.js');
@@ -62,6 +84,9 @@ if (!gotTheLock) {
       out += `      "cert": ${JSON.stringify(r.cert || "")}, // 장기요양인정번호\n`;
       out += `      "caregiver": ${JSON.stringify(r.caregiver || "")}, // 담당 요양보호사 성명\n`;
       out += `      "isDementia": ${r.isDementia ? "true" : "false"}, // 치매 여부\n`;
+      if (r.status) {
+        out += `      "status": ${JSON.stringify(r.status)}, // 상태 구분 (보류/정상)\n`;
+      }
       if (typeof r.isPending !== 'undefined') {
         out += `      "isPending": ${r.isPending ? "true" : "false"}, // 보류 여부\n`;
       }
@@ -73,6 +98,9 @@ if (!gotTheLock) {
       }
       if (typeof r.familyCareType !== 'undefined') {
         out += `      "familyCareType": ${JSON.stringify(r.familyCareType || "60")}, // 가족요양 구분\n`;
+      }
+      if (r.shift || r.shiftType) {
+        out += `      "shift": ${JSON.stringify(r.shift || r.shiftType || "")}, // 교대구분(1교대/2교대)\n`;
       }
       
       const t = r.template || {};
@@ -131,7 +159,7 @@ if (!gotTheLock) {
         try {
           const fileContent = fs.readFileSync(filePath, 'utf-8');
           const vm = require('vm');
-          const sandbox = { INITIAL_RECIPIENTS: [] };
+          const sandbox = {};
           try {
             vm.runInNewContext(fileContent, sandbox);
           } catch (vmErr) {
@@ -214,23 +242,6 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
             }
             fs.writeFileSync(filePath, jsContent, 'utf-8');
 
-            // 💡 하위 호환성 유지용 동기화 (개발 환경인 경우)
-            if (!app.isPackaged) {
-              const paths = [
-                path.join(__dirname, 'RFID_APP', 'js', 'recipients.js'),
-                path.join(__dirname, '수기 급여제공기록지', 'js', 'recipients.js'),
-                path.join(__dirname, 'LONGTERM', 'js', 'recipients.js')
-              ];
-              paths.forEach(p => {
-                try {
-                  const pDir = path.dirname(p);
-                  if (fs.existsSync(pDir)) {
-                    fs.writeFileSync(p, jsContent, 'utf-8');
-                  }
-                } catch (e) {}
-              });
-            }
-
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(JSON.stringify({ success: true }));
           } catch (err) {
@@ -252,7 +263,14 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
       }
 
       const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
-      const localFilePath = path.join(__dirname, safePath);
+      
+      // 🌟 [핵심] recipients.js 요청 시 EXE 옆의 외부 실제 수급자 파일 서빙
+      let localFilePath;
+      if (path.basename(safePath).toLowerCase() === 'recipients.js') {
+        localFilePath = getRecipientsPath();
+      } else {
+        localFilePath = path.join(__dirname, safePath);
+      }
 
       if (!fs.existsSync(localFilePath) || fs.statSync(localFilePath).isDirectory()) {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -270,7 +288,15 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
       else if (ext === '.gif') contentType = 'image/gif';
       else if (ext === '.ico') contentType = 'image/x-icon';
 
-      res.writeHead(200, { 'Content-Type': contentType });
+      // 🌟 recipients.js 및 API 요청 시 브라우저 캐시 완전 방지
+      const headers = { 'Content-Type': contentType };
+      if (ext === '.js' || ext === '.html') {
+        headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        headers['Pragma'] = 'no-cache';
+        headers['Expires'] = '0';
+      }
+
+      res.writeHead(200, headers);
       const stream = fs.createReadStream(localFilePath);
       stream.pipe(res);
     });
@@ -295,15 +321,27 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
     server.listen(port, 'localhost');
   }
 
-  // 🌟 시스템 트레이(알림 영역) 아이콘 생성 함수
+  // 🌟 시스템 트레이(알림 영역) 아이콘 생성 함수 (견고한 3중 경로 탐색 & nativeImage 지원)
   function createTray(activePort) {
-    const iconPath = path.join(__dirname, 'tray_icon.png');
-    
-    if (!fs.existsSync(iconPath)) {
-      console.error('Tray icon not found at:', iconPath);
+    const candidatePaths = [
+      path.join(__dirname, 'assets', 'tray_icon.png'),
+      path.join(__dirname, 'assets', 'rfid_icon.png'),
+      path.join(__dirname, 'tray_icon.png'),
+      path.join(__dirname, 'rfid_icon.png')
+    ];
+
+    let iconPath = candidatePaths.find(p => fs.existsSync(p)) || candidatePaths[0];
+    let trayIcon = nativeImage.createFromPath(iconPath);
+    if (trayIcon.isEmpty()) {
+      trayIcon = nativeImage.createEmpty();
     }
-    
-    tray = new Tray(iconPath);
+
+    try {
+      tray = new Tray(trayIcon);
+    } catch (e) {
+      console.error('Failed to initialize Tray:', e);
+      return;
+    }
 
     const contextMenu = Menu.buildFromTemplate([
       {
@@ -319,14 +357,20 @@ if (typeof INITIAL_RECIPIENTS === 'undefined') {
       },
       { type: 'separator' },
       {
-        label: '❌ 프로그램 종료',
+        label: '❌ 프로그램 완전 종료',
         click: () => {
+          if (server) {
+            try { server.close(); } catch (err) {}
+          }
+          if (tray) {
+            try { tray.destroy(); } catch (err) {}
+          }
           app.quit();
         }
       }
     ]);
 
-    tray.setToolTip('방문요양 스마트 허브');
+    tray.setToolTip('방문요양 스마트 허브 (우클릭하여 종료)');
     tray.setContextMenu(contextMenu);
 
     tray.on('double-click', () => {
