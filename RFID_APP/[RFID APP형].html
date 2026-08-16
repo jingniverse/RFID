@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>장기요양급여 제공기록지 (RFID APP형)</title>
-    <link rel="icon" href="../favicon.png" type="image/png">
+    <link rel="icon" href="../assets/favicon.png" type="image/png">
     <link rel="stylesheet" href="css/rfid_style.css">
     <style>
         /* 👥 수급자 목록 정렬 토글 스타일 */
@@ -130,7 +130,7 @@
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.08), 0 1px 8px rgba(0, 0, 0, 0.02);
-            width: 330px;
+            width: 370px;
             box-sizing: border-box;
             transform: translateX(calc(100% + 24px));
             transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -443,20 +443,40 @@
             display: block;
         }
     </style>
+    <script>
+        // 🌙 다크모드 깜빡임 방지 즉시 초기화
+        (function () {
+            var savedTheme = localStorage.getItem('hub-theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
 </head>
 
 <body>
+    <script>
+        (function () {
+            var savedTheme = localStorage.getItem('hub-theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
 
     <!-- 🔄 버전 전환용 플로팅 버튼 (인쇄 시 자동 숨김) -->
     <div class="version-switch-floating">
+        <button type="button" class="btn-switch-ver btn-theme-icon-only" id="btnThemeToggle" title="테마 변경 (다크/라이트)" style="background: linear-gradient(135deg, #475569 0%, #334155 100%); font-size: 16px; padding: 10px 14px;">
+            <span class="theme-icon">🌙</span>
+        </button>
         <a href="../index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-            🏠 메인 홈으로 이동
+            🏠 메인 홈
         </a>
         <a href="../수기 급여제공기록지/[수기급여제공기록지].html" class="btn-switch-ver">
-            📝 수기 급여제공기록지 화면으로 전환
+            📝 수기 급여제공기록지
         </a>
-        <a href="../LONGTERM/index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);">
-            🏛️ 롱텀 점검 뷰어로 전환
+        <a href="../LONGTERM/index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+            🏛️ 롱텀 RFID 점검
         </a>
     </div>
 
@@ -805,8 +825,7 @@
         </div>
     </div>
 
-    <script src="../수기 급여제공기록지/js/recipients.js"></script>
-    <script src="js/recipients.js"></script> <!-- 단독 공유/배포 시 동작하는 로컬 폴백 경로 추가 -->
+    <script src="../recipients.js"></script>
     <script src="js/rfid_script.js"></script>
 </body>
 

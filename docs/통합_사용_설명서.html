@@ -751,11 +751,21 @@
     </div>
 
 
-    <!-- 📅 업데이트 내역 (릴리즈 노트) 아코디언 추가 -->
+    <!-- 📅 업데이트 내역 (릴리즈 노트) 아코디언 -->
     <div class="release-section">
       <details class="release-details" open>
-        <summary class="release-summary">📅 프로그램 업데이트 및 개선 내역 (버전 히스토리)</summary>
-                    <!-- v1.8.0 -->
+        <summary class="release-summary">📅 프로그램 업데이트 내역 (버전 히스토리)</summary>
+        
+        <!-- 🛠️ 상단 우측 개발자 노트 토글 바 -->
+        <div style="display: flex; justify-content: flex-end; padding: 12px 16px 6px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+          <button type="button" id="btn-toggle-dev" onclick="toggleDevNotes(event)" style="font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #6366f1; background: #ffffff; color: #6366f1; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(99, 102, 241, 0.15);" title="내부 아키텍처 및 시스템 코드 개선 내역을 확인합니다.">
+            🛠️ 개발자 기술 노트 보기
+          </button>
+        </div>
+
+        <!-- 1️⃣ [기본 노출] 사용자 기능 업데이트 패널 -->
+        <div id="release-panel-user" class="release-content">
+          <!-- v1.8.0 -->
           <details class="release-item" open>
             <summary class="release-header">
               <span class="version-tag" style="background-color: #6366f1; color: white;">v1.8.0</span>
@@ -775,12 +785,11 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #8b5cf6; color: white;">v1.7.0</span>
-              <span class="release-title">수급자 데이터 파일 하나로 통합 및 가족요양 시간(60/90분) 자동 인식</span>
+              <span class="release-title">과거 60분/90분 가족요양 일정 자동 인식 및 복원</span>
               <span class="release-date">2026.08.16</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>🔄 수급자 정보 파일 1개로 완전 일원화</strong>: 여러 폴더에 흩어져 있던 수급자 파일들을 프로그램 바로 옆 <code>recipients.js</code> 단 1개로 합쳤습니다. 이제 이 파일 하나만 수정하거나 백업해 두면 APP형, 수기형, 롱텀형 모든 화면에 한 번에 똑같이 적용됩니다.</li>
                 <li><strong>💜 60분/90분 가족요양 일정 자동 복원</strong>: 예전에 등록해 두셨던 60분 또는 90분 가족요양 어르신들도 프로그램이 시간을 자동으로 알아채고 보라색 <strong>[가족]</strong> 이름표와 전용 체크박스를 알아서 띄워줍니다.</li>
               </ul>
             </div>
@@ -790,15 +799,15 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #10b981; color: white;">v1.6.0</span>
-              <span class="release-title">롱텀 RFID 일일점검(LONGTERM) 모듈 및 Always-on-top PiP 위젯 신설</span>
+              <span class="release-title">롱텀 RFID 일일점검 전용 뷰어 및 항상 위 작은창(PiP) 모드 탑재</span>
               <span class="release-date">2026.08.16</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>🏛️ 롱텀케어 RFID 일일점검 1:1 정밀 뷰어 신설</strong>: 국민건강보험공단 롱텀케어 팝업 서식(<code>npfc624p21</code>)을 13.5px 폰트와 레트로 폼 테두리, 도넛 라디오까지 1:1 완벽 정밀 복제하여 공단 화면과 대조 점검할 수 있는 전용 뷰어를 탑재했습니다.</li>
-                <li><strong>📌 Always-on-top Document PiP (화면 위 항상 띄우기) 위젯</strong>: 공단 사이트 위를 둥둥 떠다니며 실시간으로 대조할 수 있는 스마트 위젯 모드를 지원합니다. 헤더 내부의 <strong>[📌 PiP 모드]</strong> 버튼을 누르면 2열 글래스 위젯 뷰로 즉시 실행됩니다.</li>
-                <li><strong>📋 특이사항 사유 스마트 조합기 & 원클릭 복사</strong>: 화자(수급자/보호자) 및 사유(연속/공휴일 중복 토글) 선택에 따라 공단 제출용 표준 특이사항 문구를 자동 생성하고 클릭 한 번으로 클립보드에 복사할 수 있습니다.</li>
-                <li><strong>🏠 3대 플랫폼 스마트 통합 네비게이션</strong>: RFID APP형, 공공서식 수기 급여기록지형, 롱텀 RFID 점검형 3대 화면 간에 언제든 자유롭게 상호 전환하고 홈으로 복귀할 수 있는 통합 헤더 버튼군을 일체화했습니다.</li>
+                <li><strong>🏛️ 공단 롱텀 화면과 똑같은 1:1 대조 화면</strong>: 공단 롱텀케어 팝업 서식과 글자 크기, 테두리, 체크박스까지 1:1 똑같이 만들어 화면을 보며 편하게 대조할 수 있는 전용 뷰어를 탑재했습니다.</li>
+                <li><strong>📌 공단 사이트 위에 둥둥 띄우는 작은창(PiP 위젯)</strong>: 인터넷 창 위를 항상 떠다니는 작은 창 모드를 지원하여, 공단 사이트를 보면서 동시에 우리 센터 일정을 실시간으로 대조할 수 있습니다.</li>
+                <li><strong>📋 특이사항 사유 원클릭 자동 복사</strong>: 수급자나 보호자 사유(병원 진료, 외출 등)를 클릭하면 공단 제출용 표준 문구가 자동 완성되어 클릭 한 번으로 복사해 붙여넣을 수 있습니다.</li>
+                <li><strong>🏠 3대 화면 자유 전환</strong>: RFID APP형, 수기 급여기록지형, 롱텀 점검형 화면을 언제든 버튼 하나로 자유롭게 오갈 수 있습니다.</li>
               </ul>
             </div>
           </details>
@@ -807,14 +816,13 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #0d9488; color: white;">v1.5.1</span>
-              <span class="release-title">장기요양기관 정보(지점명/기관기호) 설정 기능 신설</span>
+              <span class="release-title">장기요양기관 정보(기관명/기관기호) 1회 설정 및 인쇄 연동</span>
               <span class="release-date">2026.07.12</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>최초 1회 기관 등록 유도</strong>: 프로그램을 최초로 실행할 때(데이터가 비어있을 때)만 화면 최상단에 기관명과 기관기호를 적을 수 있는 기본 설정 패널이 노출됩니다.</li>
-                <li><strong>등록 후 자동 숨김 및 전용 수정 버튼 제공</strong>: 정보를 한 번 입력해서 저장하고 나면, 설정창이 화면에서 깔끔하게 사라집니다. 수정이 필요한 경우에는 우측 상단의 <strong>[⚙️ 기관 정보 수정]</strong> 버튼을 클릭하여 언제든 다시 열고 닫을 수 있습니다.</li>
-                <li><strong>수기 기록지 인쇄 연동</strong>: 관리자 창에서 등록해 둔 기관 정보가 수기 기록지 인쇄 양식의 헤더에 실시간으로 적용되어 자동으로 출력됩니다.</li>
+                <li><strong>최초 1회 기관 정보 등록</strong>: 프로그램을 처음 실행할 때 우리 기관명과 기관기호를 적어두면, 수기 기록지 인쇄 시 상단에 자동으로 인쇄됩니다.</li>
+                <li><strong>우측 상단 전용 수정 버튼</strong>: 정보를 등록하고 나면 설정창이 화면에서 사라지며, 수정이 필요할 때는 언제든 우측 상단의 <strong>[⚙️ 기관 정보 수정]</strong> 버튼을 눌러 다시 열 수 있습니다.</li>
               </ul>
             </div>
           </details>
@@ -823,30 +831,28 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #2563eb; color: white;">v1.5.0</span>
-              <span class="release-title">수급자 보류 및 대기 상태 제어 도입</span>
+              <span class="release-title">병원 입원 등 서비스 일시 중단(보류/대기) 수급자 관리</span>
               <span class="release-date">2026.07.07</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>보류 및 대기 구분 상태 추가</strong>: 수급자 등록/변경 창에서 '보류' 또는 '대기' 여부를 지정하는 상호 배타적 스위치를 신설했습니다.</li>
-                <li><strong>컨트롤 패널 자동 숨김 필터링</strong>: '보류/대기' 중인 수급자는 수기 및 APP형 메인화면 목록에서 실시간으로 제외되어 화면을 깨끗하게 유지합니다.</li>
-                <li><strong>관리자 화면 딤드 가독성 강화</strong>: 관리 페이지에서는 수급자가 완전히 보이며, 반투명 대신 어두운 회색 딤드 배경(#e2e8f0)과 짙은 글씨색(#64748b)을 적용하고 성명 옆에 고대비 솔리드 배지(보류: 빨강, 대기: 주황)를 부착해 가시성을 대폭 상향했습니다.</li>
+                <li><strong>보류/대기 어르신 목록 숨김</strong>: 병원 입원 등으로 서비스를 잠시 멈춘 어르신을 '보류'나 '대기'로 지정하면 일상 작성 목록에서 제외되어 화면이 깔끔해집니다.</li>
+                <li><strong>관리자 화면 가시성 강화</strong>: 관리자 페이지에서는 보류 어르신이 완전히 보이며, 어두운 회색 바탕과 빨간색/주황색 이름표가 붙어 상태를 한눈에 확인할 수 있습니다.</li>
               </ul>
             </div>
           </details>
 
-                    <!-- v1.4.0 -->
+          <!-- v1.4.0 -->
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #7c3aed; color: white;">v1.4.0</span>
-              <span class="release-title">가족요양(60분/90분) 기능 추가 및 입력 검증 도입</span>
+              <span class="release-title">가족요양(60분/90분) 전용 시간 자동 계산 및 시간 입력 실수 방지</span>
               <span class="release-date">2026.07.06</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>가족요양(60분/90분) 자동 계산</strong>: 수급자 등록 화면에서 가족요양 시간(60분 또는 90분)을 선택하면 원래 등급별로 정해진 기본 시간 대신 가족요양 전용 시간(1시간 또는 1시간 30분)으로 일정이 자동 계산되어 저장됩니다.</li>
-                <li><strong>가족 배지(태그) 표시</strong>: 가족요양으로 등록된 수급자는 목록 화면에서 보라색 <span style="color: #7c3aed; font-weight: bold;">[가족]</span> 마크가 이름 옆에 단독으로 노출되어 가족요양 대상자임을 한눈에 바로 확인할 수 있습니다.</li>
-                <li><strong>시간 입력 검증(오류 방지)</strong>: 수급자 일정을 저장할 때 '신체활동', '정서지원' 등 세부 항목에 입력한 분(Minute) 수의 합계가 총 서비스 시간과 맞지 않으면 경고창을 통해 안내합니다. 이를 통해 입력 실수로 일과 시간이 꼬이는 현상을 차단합니다.</li>
+                <li><strong>가족요양 전용 시간 자동 계산</strong>: 수급자 등록 시 가족요양(60분 또는 90분)을 선택하면 가족요양 기준에 맞춰 일정이 자동으로 계산되어 저장됩니다.</li>
+                <li><strong>시간 입력 실수 방지 안내</strong>: 세부 항목(신체활동, 정서지원 등)에 입력한 분(Minute) 수의 합계가 총 서비스 시간과 맞지 않으면 경고창을 띄워 시간 계산 실수를 막아줍니다.</li>
               </ul>
             </div>
           </details>
@@ -855,14 +861,13 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #6d28d9; color: white;">v1.3.3</span>
-              <span class="release-title">비정기 서비스(주간/월간/필요시) 분리 및 목록 안정성 강화</span>
+              <span class="release-title">가끔 하는 비정기(주간/월간/필요시) 서비스 분리 및 인쇄 자동 제외</span>
               <span class="release-date">2026.06.28</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>비정기 서비스(주간/월간/필요시) 구분 저장</strong>: 매일 제공하는 일정 외에 주기적(주간, 월간)으로 또는 가끔씩(필요시) 수행하는 서비스들을 분리하여 수급자별 일정표에 깔끔하게 저장할 수 있습니다.</li>
-                <li><strong>비정기 서비스 인쇄 제외 필터</strong>: 주간/월간/필요시 배지가 지정된 비정기 일정은 수기 기록지 인쇄 시 자동으로 제외되며, 매일 제공하는 기본 하루 일과표만 깔끔하게 출력되도록 보장합니다.</li>
-                <li><strong>목록 로딩 보장</strong>: 전용 서버를 실행하지 않고 단순히 브라우저에서 인터넷 창을 띄워 로컬 파일을 직접 실행하는 경우에도 수급자 목록 정보가 정상적으로 로딩되도록 오류를 예방했습니다.</li>
+                <li><strong>비정기 일정 분리 저장</strong>: 매일 제공하는 일정 외에 주기적(주간, 월간)으로 또는 가끔씩(필요시) 하는 서비스를 분리하여 저장할 수 있습니다.</li>
+                <li><strong>기본 일정만 깔끔하게 인쇄</strong>: 비정기 항목은 수기 기록지 인쇄 시 자동으로 빠져서 매일 제공하는 표준 하루 일과표만 깨끗하게 출력됩니다.</li>
               </ul>
             </div>
           </details>
@@ -871,14 +876,13 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #4f46e5; color: white;">v1.3.2</span>
-              <span class="release-title">모바일 웹 반응형 레이아웃 탑재 및 가이드 시인성 보완</span>
+              <span class="release-title">작은 노트북 및 모바일 화면 자동 정렬</span>
               <span class="release-date">2026.06.24</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>모바일 웹 반응형 레이아웃 탑재</strong>: 화면 가로 폭이 1130px 이하로 좁아지거나 작은 노트북으로 실행 시, 스마트폰 화면처럼 세로 1열로 자동 정렬되어 글자가 깨지지 않고 시원하게 보입니다.</li>
-                <li><strong>가이드 시인성 보완</strong>: 하단 프로그램 상시 대기 가이드의 글씨 크기를 대폭 키우고 핵심 조작부(작업표시줄 대기, 즉시 복귀 등)에 확실한 칼라 강조 효과를 주었습니다.</li>
-                <li><strong>임시 빌드 찌꺼기 해결</strong>: 빌드 컴파일 시 특정 편집기나 시스템 백신과의 락(Lock) 충돌을 최소화하도록 포터블 패키징 파이프라인을 보완했습니다.</li>
+                <li><strong>화면 크기 맞춤 자동 정렬</strong>: 작은 노트북이나 좁은 화면에서 실행 시, 글자가 찌그러지지 않고 세로 1열로 보기 편하게 자동 정렬됩니다.</li>
+                <li><strong>하단 사용 가이드 글씨 확대</strong>: 프로그램 상시 대기 및 빠른 실행 가이드의 글씨를 크게 키워 읽기 쉽게 개선했습니다.</li>
               </ul>
             </div>
           </details>
@@ -887,13 +891,12 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #2563eb; color: white;">v1.3.1</span>
-              <span class="release-title">원클릭 자가 업데이트 연동 및 배포 파일명 개선</span>
+              <span class="release-title">대시보드 상단 최신 버전 원클릭 다운로드</span>
               <span class="release-date">2026.06.20</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>원클릭 자가 업데이트 연동</strong>: 대시보드 상단 업데이트 알림 배너를 누르면 복잡한 사이트를 거치지 않고 최신 실행파일(EXE)이 즉시 원클릭으로 직접 다운로드됩니다.</li>
-                <li><strong>배포 파일명 명확화</strong>: 빌드 산출물의 파일명이 알아보기 쉽게 <code>RFID_v[버전].exe</code> 형식으로 자동 생성되도록 개선했습니다.</li>
+                <li><strong>원클릭 업데이트 다운로드</strong>: 대시보드 상단의 업데이트 알림을 누르면 복잡한 사이트를 거치지 않고 최신 프로그램을 바로 다운로드할 수 있습니다.</li>
               </ul>
             </div>
           </details>
@@ -902,27 +905,211 @@
           <details class="release-item">
             <summary class="release-header">
               <span class="version-tag" style="background-color: #059669; color: white;">v1.3.0</span>
-              <span class="release-title">원터치 일정 자동완성 최초 탑재 및 통합 설명서 신설</span>
+              <span class="release-title">수급자 성명 더블클릭 1초 자동 완성 및 통합 설명서 신설</span>
               <span class="release-date">2026.06.18</span>
             </summary>
             <div class="release-content">
               <ul>
-                <li><strong>원터치 일정 자동완성</strong>: 수급자 성명을 마우스로 <strong>더블클릭</strong>하면 등록해 둔 하루 표준 일정이 1초 만에 자동으로 빈칸 없이 기입되는 지능형 스크립트를 최초 탑재했습니다.</li>
-                <li><strong>고해상도 통합 브랜딩 적용</strong>: 신규 스마트 통합 허브 전용 앱 아이콘 및 트레이 아이콘을 고화질로 디자인하여 적용했습니다.</li>
-                <li><strong>통합 사용 설명서 신설</strong>: 대시보드에서 직접 열 수 있는 친절한 마크업 형식의 웹 설명서 화면을 설계하여 최초 탑재했습니다.</li>
+                <li><strong>1초 만에 일정 자동 채우기</strong>: 수급자 이름을 마우스로 <strong>더블클릭</strong>하면 등록해 둔 하루 표준 일정이 1초 만에 자동으로 쏙 채워집니다.</li>
+                <li><strong>통합 사용 설명서 신설</strong>: 프로그램 사용법을 언제든 열어볼 수 있는 친절한 설명서 화면을 탑재했습니다.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+
+        <!-- 2️⃣ [전환 시 노출] 개발자 기술 노트 패널 -->
+        <div id="release-panel-dev" class="release-content" style="display: none;">
+          <!-- v1.8.0 Dev -->
+          <details class="release-item" open>
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.8.0</span>
+              <span class="release-title">[Architecture/UI] Document PiP Multi-Badge Pipeline & Mutually Exclusive Toggle</span>
+              <span class="release-date">2026.08.16</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>PiP DOM Multi-Badge Injection</strong>: <code>renderPipRecipients()</code> 내 <code>isFam</code>, <code>shiftVal</code>, <code>isDementia</code> 판정 파이프라인 추가 및 <code>row-badges-wrap</code> flex 레이아웃 주입 (치매 뱃지 최후순위 보장).</li>
+                <li><strong>Mutually Exclusive Toggle Event</strong>: <code>chkFam60/90</code>과 <code>chkShift1/2</code> 상호 배타적 이벤트 리스너 바인딩으로 데이터 무결성 보장.</li>
+                <li><strong>Data Serialization Integrity</strong>: <code>main.js</code>의 <code>stringifyWithComments()</code>에 <code>status: "보류"</code> 직렬화 로직 추가로 파일 쓰기 시 속성 유실 원천 차단.</li>
               </ul>
             </div>
           </details>
 
-        </div>
+          <!-- v1.7.0 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.7.0</span>
+              <span class="release-title">[Core/Refactoring] Single Source of Truth File Unification</span>
+              <span class="release-date">2026.08.16</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>단일 마스터 파일 아키텍처 개편</strong>: 하위 중복 <code>recipients.js</code> 3개 영구 삭제 및 루트 단일 파일 참조 일원화.</li>
+                <li><strong>자동 판정 헬퍼 도입</strong>: <code>totalTime === 60 || 90</code> 기반 가족요양 판정 헬퍼 함수(<code>getRecipientFamilyType</code>) 공통 이식.</li>
+                <li><strong>타임스탬프 기반 캐시 우선순위 재정의</strong>: <code>INITIAL_RECIPIENTS_TIMESTAMP</code> 대조를 통한 파일 우선 로드.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.6.0 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.6.0</span>
+              <span class="release-title">[Module/IPC] Longterm View Module & Document Picture-in-Picture Integration</span>
+              <span class="release-date">2026.08.16</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>LONGTERM 뷰어 신규 구축</strong>: <code>npfc624p21</code> 팝업 DOM 서식 1:1 리버스 엔지니어링 마크업.</li>
+                <li><strong>Document PiP API 연동</strong>: <code>window.documentPictureInPicture.requestWindow()</code> 기반 2열 미러링 위젯 구성.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.5.1 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.5.1</span>
+              <span class="release-title">[Data/Print] Institution Meta Persistence & Print Template Binding</span>
+              <span class="release-date">2026.07.12</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>기관 정보 메타데이터 영속성</strong>: LocalStorage 및 인라인 데이터 바인딩 파이프라인 구축.</li>
+                <li><strong>인쇄 템플릿 헤더 주입</strong>: 수기 급여제공기록지 인쇄용 CSS <code>@media print</code> 헤더에 실시간 데이터 자동 바인딩.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.5.0 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.5.0</span>
+              <span class="release-title">[Filter/UI] Status-based List Exclusion & Admin High-Contrast Styling</span>
+              <span class="release-date">2026.07.07</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>클라이언트 상태 필터링</strong>: <code>filterRecipientStatus()</code> 파이프라인으로 일반 화면 목록 자동 배제.</li>
+                <li><strong>관리자 딤드 스타일링</strong>: <code>.row-dimmed</code> 클래스 인젝션 및 고대비 솔리드 뱃지(#dc2626, #d97706) 렌더링.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.4.0 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.4.0</span>
+              <span class="release-title">[Validation/CSS] Service Minutes Sum Validation & Box-Model Refactoring</span>
+              <span class="release-date">2026.07.06</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>서비스 시간 유효성 검증</strong>: 6대 요양 분배 분(Minute) 수의 합계와 <code>totalTime</code> 대조 알고리즘 탑재.</li>
+                <li><strong>박스 모델 통일</strong>: 텍스트 인풋, 셀렉트, 체크박스 테두리 상자 높이를 38px(<code>border-box</code>)로 통일 리팩토링.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.3.3 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.3.3</span>
+              <span class="release-title">[Schema/CORS] Irregular Service Schema Separation & Local CORS Bypass</span>
+              <span class="release-date">2026.06.28</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>3중 배열 스키마 분리</strong>: <code>weekly/monthly/asNeeded</code> 3중 boolean 배열 데이터 스키마 분리 및 인쇄 제외 필터 적용.</li>
+                <li><strong>로컬 프로토콜 CORS 회피</strong>: <code>file://</code> 환경에서 외부 JSON 요청 차단 문제를 해결하기 위해 인라인 JS 스크립트 로더 아키텍처 채택.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.3.2 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.3.2</span>
+              <span class="release-title">[Responsive/Build] Media Query 1130px & Temp Build Directory Isolation</span>
+              <span class="release-date">2026.06.24</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>미디어 쿼리 레이아웃</strong>: <code>@media (max-width: 1130px)</code> 기준 세로 1열 플렉스박스 자동 재배치.</li>
+                <li><strong>빌드 디렉터리 격리</strong>: electron-builder 파일 락(Lock) 충돌을 방지하기 위한 임시 폴더(<code>.rfid_build_tmp</code>) 자동 생성 및 소거 파이프라인.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.3.1 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.3.1</span>
+              <span class="release-title">[Release/CI] GitHub Releases Binary Stream Direct Downloader</span>
+              <span class="release-date">2026.06.20</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>바이너리 스트리밍 다운로드</strong>: GitHub Releases REST API와 연동된 원클릭 무설치 EXE 직접 다운로드 파이프라인 구축.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- v1.3.0 Dev -->
+          <details class="release-item">
+            <summary class="release-header">
+              <span class="version-tag" style="background-color: #475569; color: white;">v1.3.0</span>
+              <span class="release-title">[Core/IPC] Electron Multi-Window IPC & Double-Click DOM Debouncing</span>
+              <span class="release-date">2026.06.18</span>
+            </summary>
+            <div class="release-content">
+              <ul>
+                <li><strong>Electron 멀티 윈도우 통신</strong>: <code>ipcMain</code> 및 <code>ipcRenderer</code> 기반 메인/관리자/설명서 창 간 상태 동기화.</li>
+                <li><strong>더블클릭 디바운싱</strong>: 수급자 성명 dblclick 이벤트 디바운싱 바인딩으로 데이터 즉각 주입.</li>
+              </ul>
+            </div>
+          </details>
+        </div> <!-- release-panel-dev 닫기 -->
+
       </details>
-    </div>
+    </div> <!-- release-section 닫기 -->
 
   </div> <!-- manual-container 닫기 -->
 
 </div> <!-- main-wrapper 닫기 -->
 
 <script>
+  // 🛠️ 개발자 기술 노트 토글 전역 함수
+  var isDevMode = false;
+  function toggleDevNotes(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    isDevMode = !isDevMode;
+    var btn = document.getElementById('btn-toggle-dev');
+    var panelUser = document.getElementById('release-panel-user');
+    var panelDev = document.getElementById('release-panel-dev');
+
+    if (!panelUser || !panelDev || !btn) return;
+
+    if (isDevMode) {
+      panelUser.style.setProperty('display', 'none', 'important');
+      panelDev.style.setProperty('display', 'block', 'important');
+      btn.innerHTML = '👥 일반 업데이트 내역 보기';
+      btn.style.background = '#6366f1';
+      btn.style.color = '#ffffff';
+      btn.style.borderColor = '#6366f1';
+    } else {
+      panelUser.style.setProperty('display', 'block', 'important');
+      panelDev.style.setProperty('display', 'none', 'important');
+      btn.innerHTML = '🛠️ 개발자 기술 노트 보기';
+      btn.style.background = '#ffffff';
+      btn.style.color = '#6366f1';
+      btn.style.borderColor = '#6366f1';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     // 팝업으로 열렸거나 창 닫기가 가능한 환경인 경우 뒤로가기 링크를 창 닫기로 전환
     const backLink = document.querySelector('.btn-back-text');

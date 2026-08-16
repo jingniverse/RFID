@@ -4,23 +4,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>장기요양급여 제공기록지 (롱텀 RFID 수정)</title>
-  <link rel="icon" href="../favicon.png" type="image/png">
+  <title>장기요양급여 제공기록 대조 (롱텀 포털 연계형)</title>
+  <link rel="icon" href="../assets/favicon.png" type="image/png">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // 🌙 다크모드 깜빡임 방지 즉시 초기화
+    (function () {
+      var savedTheme = localStorage.getItem('hub-theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark-theme');
+      }
+    })();
+  </script>
 </head>
 
 <body>
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('hub-theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+      }
+    })();
+  </script>
 
   <!-- 🔄 1. 좌측 상단 플로팅 버전 전환 버튼군 -->
   <div class="version-switch-floating">
-    <a href="../index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-      🏠 메인 홈으로 이동
+    <button type="button" class="btn-switch-ver btn-theme-icon-only" id="btnThemeToggle" title="테마 변경 (다크/라이트)"
+      style="background: linear-gradient(135deg, #475569 0%, #334155 100%); font-size: 16px; padding: 10px 14px;">
+      <span class="theme-icon">🌙</span>
+    </button>
+    <a href="../index.html" class="btn-switch-ver"
+      style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+      🏠 메인 홈
     </a>
     <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver purple">
-      📱 RFID APP형 화면으로 전환
+      📱 RFID APP형
     </a>
     <a href="../수기 급여제공기록지/[수기급여제공기록지].html" class="btn-switch-ver">
-      📝 수기 급여제공기록지 화면으로 전환
+      📝 수기 급여제공기록지
     </a>
   </div>
 
@@ -34,7 +56,8 @@
       <div class="lt-titlebar">
         <span class="lt-title-text">롱텀 일일 RFID 점검</span>
         <div class="lt-titlebar-actions">
-          <button type="button" class="btn-pip-titlebar" id="btnOpenPiP" title="공단 사이트 위에 항상 띄워두고 대조하기 (Always-on-top PiP 모드)">
+          <button type="button" class="btn-pip-titlebar" id="btnOpenPiP"
+            title="공단 사이트 위에 항상 띄워두고 대조하기 (Always-on-top PiP 모드)">
             📌 PiP 모드
           </button>
           <button type="button" class="btn-pip-close" id="btnPipClose" style="display: none;" title="PiP 창 닫기">
@@ -58,26 +81,27 @@
           <!-- 수급자명 -->
           <tr>
             <th colspan="2">수급자명</th>
-            <td colspan="2" id="ltRecipientName">김수급</td>
+            <td colspan="2" id="ltRecipientName" style="color: #64748b;">수급자를 선택해 주세요</td>
           </tr>
 
           <!-- 요양요원명 -->
           <tr>
             <th colspan="2">요양요원명</th>
-            <td colspan="2" id="ltCaregiverName">김요양</td>
+            <td colspan="2" id="ltCaregiverName" style="color: #64748b;">-</td>
           </tr>
 
-          <!-- 서비스일자 -->
+          <!-- 서비스일자 (실시간 오늘 날짜 연동) -->
           <tr>
             <th colspan="2">서비스일자</th>
-            <td colspan="2" id="ltServiceDate">2026-08-05</td>
+            <td colspan="2" id="ltServiceDate">-</td>
           </tr>
 
           <!-- 급여종류 -->
           <tr>
             <th colspan="2">급여종류</th>
             <td colspan="2">
-              방문요양 <span id="ltTotalTimeDisplay" style="margin-left: 20px; color: #555;">(총시간 : 223분)</span>
+              방문요양 <span id="ltTotalTimeDisplay" data-total="0" style="margin-left: 20px; color: #555;">(총시간 : -
+                분)</span>
             </td>
           </tr>
 
@@ -87,12 +111,12 @@
             <th class="sub-header">신체활동지원</th>
             <td class="time-cell">
               <div class="time-input-box">
-                <input type="text" class="time-input" id="timePhysical" value="040" maxlength="3" readonly> 분
+                <input type="text" class="time-input" id="timePhysical" value="000" maxlength="3" readonly> 분
               </div>
             </td>
             <td rowspan="6" class="summary-cell">
               <div class="time-summary-area">
-                <div class="time-sum-blue" id="displayEnteredTime">입력시간 : 223분</div>
+                <div class="time-sum-blue" id="displayEnteredTime">입력시간 : 0분</div>
                 <div class="time-remain-red" id="displayRemainTime">잔여시간 : 0분</div>
               </div>
             </td>
@@ -125,7 +149,7 @@
             <th class="sub-header">정서지원</th>
             <td class="time-cell">
               <div class="time-input-box">
-                <input type="text" class="time-input" id="timeEmotional" value="020" maxlength="3" readonly> 분
+                <input type="text" class="time-input" id="timeEmotional" value="000" maxlength="3" readonly> 분
               </div>
             </td>
           </tr>
@@ -133,7 +157,7 @@
             <th class="sub-header">가사, 일상생활지원</th>
             <td class="time-cell">
               <div class="time-input-box">
-                <input type="text" class="time-input" id="timeHousehold" value="163" maxlength="3" readonly> 분
+                <input type="text" class="time-input" id="timeHousehold" value="000" maxlength="3" readonly> 분
               </div>
             </td>
           </tr>
@@ -356,9 +380,8 @@
     </div>
   </div>
 
-  <!-- 스크립트 연결 (공통 폴백 경로 포함) -->
-  <script src="../수기 급여제공기록지/js/recipients.js"></script>
-  <script src="js/recipients.js"></script>
+  <!-- 스크립트 연결 (상위 단일 마스터 원본) -->
+  <script src="../recipients.js"></script>
   <script src="js/longterm.js"></script>
 </body>
 

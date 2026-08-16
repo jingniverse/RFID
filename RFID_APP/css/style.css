@@ -272,7 +272,7 @@ td .num-box+.num-box {
   border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08),
     0 1px 10px rgba(0, 0, 0, 0.04);
-  width: 330px;
+  width: 370px;
   box-sizing: border-box;
 }
 

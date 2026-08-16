@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>장기요양급여 제공기록지(방문요양)</title>
-  <link rel="icon" href="../favicon.png" type="image/png">
+  <link rel="icon" href="../assets/favicon.png" type="image/png">
   <link rel="stylesheet" href="css/style.css">
   <style>
     /* 👥 수급자 목록 정렬 토글 스타일 */
@@ -112,20 +112,42 @@
       }
     }
   </style>
+  <script>
+    // 🌙 다크모드 깜빡임 방지 즉시 초기화
+    (function () {
+      var savedTheme = localStorage.getItem('hub-theme') || 'light';
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
+  </script>
 </head>
 
-<body>
+<body class="light-theme">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('hub-theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.remove('light-theme');
+      } else {
+        document.body.classList.add('light-theme');
+      }
+    })();
+  </script>
 
-  <!-- 🔄 버전 전환용 플로팅 버튼 (인쇄 시 자동 숨김) -->
+  <!-- 🔄 1. 좌측 상단 플로팅 버전 전환 버튼군 -->
   <div class="version-switch-floating">
+    <button type="button" class="btn-switch-ver btn-theme-icon-only" id="btnThemeToggle" title="테마 변경 (다크/라이트)" style="background: linear-gradient(135deg, #475569 0%, #334155 100%); font-size: 16px; padding: 10px 14px;">
+      <span class="theme-icon">🌙</span>
+    </button>
     <a href="../index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-      🏠 메인 홈으로 이동
+      🏠 메인 홈
     </a>
-    <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver">
-      📱 RFID APP형 화면으로 전환
+    <a href="../RFID_APP/[RFID APP형].html" class="btn-switch-ver purple">
+      📱 RFID APP형
     </a>
-    <a href="../LONGTERM/index.html" class="btn-switch-ver" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);">
-      🏛️ 롱텀 점검 뷰어로 전환
+    <a href="../LONGTERM/index.html" class="btn-switch-ver green" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+      🏛️ 롱텀 RFID 점검
     </a>
   </div>
 
@@ -774,7 +796,7 @@
   <!-- ⚠️ 실시간 상단 플로팅 토스트 경고 알림 컨테이너 -->
   <div id="validation-toast-container" class="validation-toast-container"></div>
 
-  <script src="js/recipients.js"></script>
+  <script src="../recipients.js"></script>
   <script src="js/script.js"></script>
 </body>
 

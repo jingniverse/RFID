@@ -25,6 +25,12 @@ body {
   padding: 40px 20px;
   position: relative;
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* 🌙 롱텀 뷰어 다크 테마 (컨텐츠는 원본 유지, 바탕 배경만 다크) */
+body.dark-theme {
+  background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%);
 }
 
 /* ──────────────── 🔄 좌측 상단 플로팅 버전 전환 버튼 ──────────────── */
@@ -111,7 +117,7 @@ body {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.12), 0 1px 8px rgba(0, 0, 0, 0.04);
-  width: 340px;
+  width: 370px;
   box-sizing: border-box;
   transform: translateX(calc(100% + 24px));
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1008,19 +1014,19 @@ body {
   transform: scale(0.98);
 }
 
-/* ──────────────── 🔔 화면 상단 중앙 고시인성 토스트 알림 ──────────────── */
+/* ──────────────── 🔔 화면 하단 중앙 토스트 알림 (상단 버튼 가림 완전 방지) ──────────────── */
 .toast-notice {
   position: fixed;
-  top: 28px;
+  bottom: 28px;
   left: 50%;
-  transform: translate(-50%, -20px) scale(0.92);
+  transform: translate(-50%, 20px) scale(0.92);
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #ffffff;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 50px;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: bold;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.18);
   opacity: 0;

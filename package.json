@@ -1,11 +1,11 @@
 {
   "name": "rfid-smart-care-hub",
-  "version": "1.6.0",
+  "version": "1.8.0",
   "description": "방문요양 급여제공기록지 & RFID 스마트 통합 관리 대시보드",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win portable"
+    "dist": "node build_hub.js"
   },
   "keywords": [
     "rfid",
@@ -18,22 +18,28 @@
   "build": {
     "appId": "com.jingniverse.rfidhub",
     "productName": "RFID_HUB",
+    "directories": {
+      "output": "dist"
+    },
+    "electronDist": "C:\\Users\\ziziz\\.electron-dist-43",
+    "npmRebuild": false,
     "win": {
       "target": "portable",
-      "icon": "rfid_icon.png"
+      "icon": "assets/rfid_icon.png"
     },
     "portable": {
-      "artifactName": "RFID_HUB_v1.6.0.exe"
+      "artifactName": "RFID_HUB_v1.8.0.exe"
     },
+    "asar": true,
     "files": [
       "**/*",
-      "!dist/**",
+      "!dist*/**",
       "!build_app/**",
-      "!node_modules/**"
+      "!node_modules/**",
+      "!**/recipients.js"
     ]
   },
   "devDependencies": {
-    "@electron/packager": "^18.3.6",
     "electron": "^43.4.0",
     "electron-builder": "^26.15.3"
   }

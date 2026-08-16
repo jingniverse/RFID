@@ -985,8 +985,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const filtered = recipients.filter(r => {
             // 보류/대기 수급자는 실시간 패널에서 필터링하여 숨김
-            const status = r.status || '정상';
-            if (status === '보류' || status === '대기') return false;
+            const status = r.status || (r.isPending ? '보류' : (r.isWaiting ? '대기' : '정상'));
+            if (status === '보류' || status === '대기' || r.isPending || r.isWaiting) return false;
 
             if (!query) return true;
             const name = r.name.toLowerCase();
@@ -1050,17 +1050,55 @@ document.addEventListener('DOMContentLoaded', function () {
             row.className = 'recipient-row';
             row.title = '💡 더블클릭하면 이 수급자의 하루 표준 일정을 즉시 적용합니다.';
 
-            const familyCareBadge = (r.template && r.template.familyCare) ? `<span class="badge-dementia">가족</span>` : '';
-            const genderBadge = `<span style="font-size: 11px; color: ${r.gender === '남' ? '#3b82f6' : '#ec4899'}; font-weight: bold; margin-left: 4px;">(${r.gender || '여'})</span>`;
+            // 성별 표시
+            const genderHtml = r.gender ? `<span style="font-size: 12px; color: ${r.gender === '남' ? '#2563eb' : '#ec4899'}; font-weight: bold; margin-left: 2px;">(${r.gender})</span>` : '';
+
+            // 등급 뱃지
+            const gradeBadge = r.grade ? `<span class="row-grade" style="font-size: 11px; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 6px; font-weight: bold; margin-left: 4px;">${r.grade}등급</span>` : '';
+
+            // 생년월일 및 인정번호 메타 정보
+            const birthText = r.birth ? `<span style="color: #94a3b8; margin: 0 3px;">·</span><span style="color: #64748b; font-size: 11.5px;">${r.birth}</span>` : '';
+            const certText = r.cert ? `<span style="color: #94a3b8; margin: 0 3px;">·</span><span style="color: #334155; font-size: 11.5px; font-weight: 500;">${r.cert}</span>` : '';
+
+            // 🏷️ 우측 뱃지 영역 (가족 / 오전 / 오후)
+            let badgesHtml = '';
+
+            // 1. 가족요양 뱃지 (하위 호환 및 60분/90분 자동 판정)
+            const t = r.template || {};
+            const totMin = String((t && t.totalTime) ? t.totalTime : '').trim();
+            const isFam = r.familyCareType === '60' || r.familyCareType === '90' || 
+                          t.familyCare === '60' || t.familyCare === '90' || 
+                          t.familyCareType === '60' || t.familyCareType === '90' || 
+                          r.isFamilyCare || r.familyCare || t.isFamilyCare || t.familyCare ||
+                          totMin === '60' || totMin === '90';
+            if (isFam) {
+                badgesHtml += `<span style="font-size: 11px; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 6px; font-weight: bold;">가족</span>`;
+            }
+
+            // 2. 근무 구분(오전/오후) 뱃지 (하위 호환)
+            const shiftVal = String(r.shift || r.shiftType || t.shift || t.shiftType || '').trim();
+            if (shiftVal === '오전' || shiftVal === '1교대' || shiftVal === '1' || shiftVal.toLowerCase() === 'morning') {
+                badgesHtml += `<span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 6px; font-weight: bold;">오전</span>`;
+            } else if (shiftVal === '오후' || shiftVal === '2교대' || shiftVal === '2' || shiftVal.toLowerCase() === 'afternoon') {
+                badgesHtml += `<span style="font-size: 11px; background: #ffedd5; color: #ea580c; padding: 2px 6px; border-radius: 6px; font-weight: bold;">오후</span>`;
+            }
+
+            // 3. 치매 뱃지 (보조)
+            if (r.isDementia && !isFam) {
+                badgesHtml += `<span style="font-size: 11px; background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 6px; font-weight: bold;">치매</span>`;
+            }
 
             row.innerHTML = `
-                <div class="row-info-wrap">
-                    <span class="row-name">${escapeHtml(r.name)}${genderBadge}</span>
-                    <span class="row-grade">${r.grade}등급</span>
-                    <span class="row-sep">·</span>
-                    <span class="row-birth">${escapeHtml(r.birth)}</span>
+                <div class="row-info-wrap" style="display: flex; align-items: center; gap: 2px; flex: 1; overflow: hidden; white-space: nowrap;">
+                    <span class="row-name" style="font-weight: bold; color: #0f172a; font-size: 13px;">${escapeHtml(r.name)}</span>
+                    ${genderHtml}
+                    ${gradeBadge}
+                    ${birthText}
+                    ${certText}
                 </div>
-                ${familyCareBadge}
+                <div class="row-badges-wrap" style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                    ${badgesHtml}
+                </div>
             `;
 
             // 더블클릭 시 1초 자동 완성 적용
@@ -1588,9 +1626,46 @@ document.addEventListener('DOMContentLoaded', function () {
             const h = 960;
             const left = (window.screen.width / 2) - (w / 2);
             const top = (window.screen.height / 2) - (h / 2);
-            window.open('[관리자] 수급자 등록 및 변경하기.html', 'recipient_dashboard', `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+            window.open('../[관리자] 수급자 등록 및 변경하기.html', 'recipient_dashboard', `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`);
         });
     }
+
+    // 🌙 다크/라이트 테마 제어 및 실시간 동기화
+    const btnTheme = document.getElementById('btnThemeToggle');
+    function updateThemeUI() {
+        const isDark = document.body.classList.contains('dark-theme');
+        if (btnTheme) {
+            const icon = btnTheme.querySelector('.theme-icon') || btnTheme;
+            icon.innerHTML = isDark ? '☀️' : '🌙';
+        }
+    }
+
+    const savedTheme = localStorage.getItem('hub-theme') || 'light';
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+    }
+    updateThemeUI();
+
+    if (btnTheme) {
+        btnTheme.addEventListener('click', function () {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('hub-theme', isDark ? 'dark' : 'light');
+            updateThemeUI();
+        });
+    }
+
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'hub-theme') {
+            if (e.newValue === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+            updateThemeUI();
+        }
+    });
 
     // 🎛️ 반응형 슬라이딩 드로어(control-panel) 온오프 제어 연동
     const toggleBtn = document.getElementById('controlPanelToggle');
