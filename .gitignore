@@ -5,6 +5,9 @@
 # 1. 모든 하위 폴더의 recipients.js 개인정보 파일 업로드 영구 차단
 **/recipients.js
 
+# HTML 배포용 루트 가짜 수급자 파일만 Git 추적 허용
+!/recipients.js
+
 # 2. 시스템 임시 파일 및 캐시 파일 차단
 Thumbs.db
 .DS_Store

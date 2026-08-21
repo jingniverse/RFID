@@ -967,6 +967,7 @@ function setupPiPMode() {
         list.forEach(function (rec) {
           var row = pipWindow.document.createElement("div");
           row.className = "recipient-row" + (rec.id === selectedRecipientId ? " selected" : "");
+          row.dataset.recipientId = String(rec.id);
 
           // 성별 표시
           var genderHtml = rec.gender ? '<span style="font-size: 11px; color: ' + (rec.gender === '남' ? '#2563eb' : '#ec4899') + '; font-weight: bold; margin-left: 1px;">(' + rec.gender + ')</span>' : '';
@@ -1021,25 +1022,13 @@ function setupPiPMode() {
 
       function updatePipSelectedRow(recId) {
         var allRows = listContainer.querySelectorAll(".recipient-row");
-        var list = currentRecipients.slice();
-        list.sort(function (a, b) {
-          if (currentSortMode === "name") {
-            return (a.name || "").localeCompare(b.name || "", "ko");
-          } else {
-            var tA = (a.template && a.template.startTime) ? a.template.startTime : "99:99";
-            var tB = (b.template && b.template.startTime) ? b.template.startTime : "99:99";
-            return tA.localeCompare(tB);
-          }
-        });
+        var selectedId = String(recId);
 
-        list.forEach(function (r, idx) {
-          if (allRows[idx]) {
-            if (r.id === recId) {
-              allRows[idx].classList.add("selected");
-              allRows[idx].scrollIntoView({ behavior: "smooth", block: "nearest" });
-            } else {
-              allRows[idx].classList.remove("selected");
-            }
+        allRows.forEach(function (row) {
+          var isSelected = row.dataset.recipientId === selectedId;
+          row.classList.toggle("selected", isSelected);
+          if (isSelected) {
+            row.scrollIntoView({ behavior: "smooth", block: "nearest" });
           }
         });
       }

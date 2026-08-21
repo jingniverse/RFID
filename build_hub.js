@@ -1,8 +1,10 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const pkg = require('./package.json');
+const APP_VERSION = pkg.version;
 
-console.log('🚀 [RFID_HUB] v1.8.0 빌드 및 dist 단일화 프로세스를 시작합니다...');
+console.log(`🚀 [RFID_HUB] v${APP_VERSION} 빌드 및 dist 단일화 프로세스를 시작합니다...`);
 
 // 1. 실행 중인 프로세스 안전 종료
 try {
@@ -32,20 +34,12 @@ try {
     fs.mkdirSync(distDir, { recursive: true });
   }
 
-  const generatedExe = path.join(tmpBuildDir, 'RFID_v1.8.0.exe');
-  const targetExe = path.join(distDir, 'RFID_v1.8.0.exe');
+  const generatedExe = path.join(tmpBuildDir, `RFID_v${APP_VERSION}.exe`);
+  const targetExe = path.join(distDir, `RFID_v${APP_VERSION}.exe`);
 
   if (fs.existsSync(generatedExe)) {
     fs.copyFileSync(generatedExe, targetExe);
     console.log(`✅ 성공: ${targetExe} 생성 완료!`);
-  }
-
-  // 4-1. dist 폴더에 루트 최신 recipients.js 항상 강제 동기화
-  const distRecipients = path.join(distDir, 'recipients.js');
-  const rootRecipients = path.join(__dirname, 'recipients.js');
-  if (fs.existsSync(rootRecipients)) {
-    fs.copyFileSync(rootRecipients, distRecipients);
-    console.log(`✅ 루트 recipients.js 파일이 dist 폴더로 최신 동기화되었습니다.`);
   }
 
   // 5. 임시 빌드 폴더 정리

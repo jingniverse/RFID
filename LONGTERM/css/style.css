@@ -734,10 +734,17 @@ body.dark-theme {
 
 .checkbox-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   row-gap: 8px;
-  column-gap: 16px;
   padding: 3px 0;
+}
+
+/* 신체활동지원 항목을 의미 있는 줄 단위로 고정해 화면 폭에 따른 순서 변경 방지 */
+.checkbox-grid .checkbox-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  column-gap: 16px;
 }
 
 /* ──────────────── 📝 측면 상용구 & 가이드 패널 ──────────────── */
