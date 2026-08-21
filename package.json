@@ -21,7 +21,6 @@
     "directories": {
       "output": "dist"
     },
-    "electronDist": "C:\\Users\\ziziz\\.electron-dist-43",
     "npmRebuild": false,
     "win": {
       "target": "portable",
